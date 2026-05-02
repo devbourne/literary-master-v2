@@ -25,6 +25,11 @@ import {
 import { runSynthesisAgent } from "../agents/synthesis-agent";
 import { runQualityAgent } from "../agents/quality-agent";
 import { runKoreanProofreaderAgent } from "../agents/korean-proofreader-agent";
+import { runMultiGlossAgent } from "../agents/multi-gloss-agent";
+import {
+  renderMultiGlossForSynthesisPrompt,
+  type MultiGloss,
+} from "../schemas/gloss";
 import { evaluateFinalizationGate } from "./finalization-gate";
 import type { PipelineEvent } from "../types";
 import type { PipelineStats, Sources, StepStat } from "../schemas/teaching-material";
@@ -425,17 +430,69 @@ export async function orchestrate(
     }
   }
 
+  // ── Pass 3.5: Multi-Gloss layer (v2.5 Track) ──
+  // Three perspective glosses dispatched in parallel; integrated INTO the
+  // existing synthesis fields by the Synthesis stage below. Skipped on tiny
+  // inputs (synthesis already trivial) and skippable via env var when
+  // running in budget-strict mode.
+  let multiGloss: MultiGloss | undefined;
+  const multiGlossEnabled = process.env.MULTI_GLOSS !== "false" && text.length >= 1500;
+  if (multiGlossEnabled) {
+    checkAborted("multi_gloss");
+    send({
+      type: "status",
+      phase: "synthesis",
+      message: "다관점 글로스 작성 중 (텍스트 정밀 / 비평 전통 / 한국 독자)...",
+    });
+    const mgRes = await runMultiGlossAgent({
+      text,
+      profile,
+      glossarySection,
+      signal,
+      translationModel: MODEL,
+    });
+    multiGloss = mgRes.multiGloss;
+    totalTokens += mgRes.totalTokens;
+    log("multi_gloss", "result", {
+      timeS: mgRes.timeS,
+      tokens: mgRes.totalTokens,
+      angles: mgRes.steps.map((s) => ({
+        angle: s.angle,
+        model: s.model,
+        ok: s.parseOk,
+        tokens: s.tokens,
+        timeS: s.timeS,
+        error: s.error,
+      })),
+    });
+    stats.push({
+      step: 3.5,
+      label: `Multi-Gloss (textual/critical/pedagogical)`,
+      tokens: mgRes.totalTokens,
+      timeS: mgRes.timeS,
+      tokS: 0,
+    });
+  }
+
   // ── Synthesis (v2 Phase B: length-routing strategy) ──
+  // When multi-gloss ran, its rendered context block is appended to the
+  // summarizeBlocks output the Synthesis stage feeds to its prompt. Synthesis
+  // still produces its existing schema; multi-gloss is enrichment input.
   send({
     type: "status",
     phase: "synthesis",
     message: "종합 분석 작성 중...",
   });
   checkAborted("synthesis");
+  const summarizeWithGloss = (blocks: AnnotatedBlock[]) => {
+    const base = summarizeBlocksForSynthesis(blocks);
+    if (!multiGloss) return base;
+    return `${base}\n\n${renderMultiGlossForSynthesisPrompt(multiGloss)}`;
+  };
   const synthRes = await runSynthesisAgent({
     profile,
     annotated,
-    summarizeBlocks: summarizeBlocksForSynthesis,
+    summarizeBlocks: summarizeWithGloss,
     signal,
     onProgress: (chars) => {
       send({
