@@ -1,7 +1,6 @@
 import { callLLM } from "../llm";
 import { runProfileAgent } from "../agents/profile-agent";
 import { buildBlockBatchPrompt } from "../prompts/block-batch";
-import { buildRevisePrompt } from "../prompts/pass3-revise";
 import { type WorkProfile } from "../schemas/profile";
 import { BatchResponseSchema, AnnotatedBlockSchema, type AnnotatedBlock } from "../schemas/block";
 import { type Synthesis } from "../schemas/synthesis";
@@ -22,6 +21,7 @@ import {
   type CoverageRepairTarget,
 } from "../agents/coverage-repair-agent";
 import { runSynthesisAgent } from "../agents/synthesis-agent";
+import { runQualityAgent } from "../agents/quality-agent";
 import { evaluateFinalizationGate } from "./finalization-gate";
 import type { PipelineEvent } from "../types";
 import type { PipelineStats, Sources, StepStat } from "../schemas/teaching-material";
@@ -284,58 +284,49 @@ export async function orchestrate(
     });
   }
 
-  // ── Pass 3: Revise Flagged ──
-  const flagged = annotated.filter((b) => b.annotations.flag_for_revision);
-  log("pass3", "flagged_count", `${flagged.length} of ${annotated.length}`);
-  if (flagged.length > 0 && flagged.length < annotated.length * 0.5) {
+  // ── Pass 3: Quality Agent (v2 Phase C — ratio-banded revise + batch retry) ──
+  const initialFlaggedCount = annotated.filter(
+    (b) => b.annotations?.flag_for_revision,
+  ).length;
+  log("pass3", "flagged_count", `${initialFlaggedCount} of ${annotated.length}`);
+
+  if (initialFlaggedCount > 0) {
     send({
       type: "status",
       phase: "revise",
-      message: `${flagged.length}개 블록 재검토`,
+      message: `${initialFlaggedCount}개 블록 재검토`,
     });
-    const t3Start = Date.now();
-    let step3Tokens = 0;
-    for (const b of flagged) {
-      checkAborted("revise");
-      const idx = annotated.findIndex((x) => x.blockId === b.blockId);
-      const prompt = buildRevisePrompt({
-        profileSummary,
-        fullRollingSummary: rollingSummary,
-        flaggedBlock: {
-          blockId: b.blockId,
-          originalText: b.originalText,
-          previousTranslation: {
-            literary: b.literary_translation,
-            literal: b.literal_translation,
-          },
-          flagReason: b.annotations.flag_reason,
-        },
-        neighbors: {
-          before: annotated[idx - 1]?.literary_translation,
-          after: annotated[idx + 1]?.literary_translation,
-        },
-      });
-      const res = await callLLM(prompt, 1500, signal);
-      try {
-        const cleaned = res.text.trim().replace(/^```\w*\s*\n?/, "").replace(/\n?```\s*$/, "");
-        const obj = JSON.parse(cleaned);
-        if (obj.changes_significant !== false) {
-          annotated[idx].revised_literary_translation = obj.revised_literary_translation;
-          annotated[idx].revised_literal_translation = obj.revised_literal_translation;
-          annotated[idx].revision_reason = obj.revision_reason;
-        }
-      } catch {}
-      step3Tokens += res.usage.completionTokens;
-      totalTokens += res.usage.completionTokens;
-      send({ type: "revise_one", blockId: b.blockId });
-    }
+    checkAborted("quality");
+    const qualityRes = await runQualityAgent({
+      annotated,
+      batches,
+      profileSummary,
+      rollingSummary,
+      signal,
+    });
+    fallbackCount += qualityRes.fallbackCount;
+    totalTokens += qualityRes.tokens;
+    log("pass3", "quality_result", {
+      band: qualityRes.band,
+      flaggedRatioBefore: qualityRes.flaggedRatioBefore,
+      flaggedRatioAfter: qualityRes.flaggedRatioAfter,
+      retriedBatchIndices: qualityRes.retriedBatchIndices,
+      revisedCount: qualityRes.revisedCount,
+      fallbackCount: qualityRes.fallbackCount,
+    });
     stats.push({
       step: 3,
-      label: "Revise",
-      tokens: step3Tokens,
-      timeS: (Date.now() - t3Start) / 1000,
+      label: `Revise (${qualityRes.band}, ${qualityRes.revisedCount} revised, ${qualityRes.retriedBatchIndices.length} batch retr.)`,
+      tokens: qualityRes.tokens,
+      timeS: qualityRes.timeS,
       tokS: 0,
     });
+    // Existing UI event preserved per revised block — emit one bulk event so the
+    // existing client-side counter still advances. (Per-block revise_one events
+    // are deprecated for v2; the agent loop emits no granular events of its own.)
+    for (let i = 0; i < qualityRes.revisedCount; i++) {
+      send({ type: "revise_one", blockId: "" });
+    }
   }
 
   // ── Synthesis (v2 Phase B: length-routing strategy) ──
