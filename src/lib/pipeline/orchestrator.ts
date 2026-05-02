@@ -1,0 +1,540 @@
+import { callLLM, streamLLMChunks } from "../llm";
+import { buildProfilePrompt } from "../prompts/profile";
+import { buildBlockBatchPrompt } from "../prompts/block-batch";
+import { buildRevisePrompt } from "../prompts/pass3-revise";
+import { buildSynthesisPromptV2 } from "../prompts/synthesis";
+import { WorkProfileSchema, type WorkProfile } from "../schemas/profile";
+import { BatchResponseSchema, AnnotatedBlockSchema, type AnnotatedBlock } from "../schemas/block";
+import { SynthesisSchema, type Synthesis } from "../schemas/synthesis";
+import { safeParseLLM } from "../schemas/safe-parse";
+import { synthesisToPlainText } from "./synthesis-to-text";
+import { splitIntoBlocks } from "./blocker";
+import {
+  chunkBlocks,
+  summarizeProfileForBatch,
+  formatPreviousTranslations,
+  truncate,
+} from "./batcher";
+import { assemble } from "./assemble";
+import { saveTeachingMaterial } from "./storage";
+import { runVerifyAgent } from "../agents/verify-agent";
+import { evaluateFinalizationGate } from "./finalization-gate";
+import type { PipelineEvent } from "../types";
+import type { PipelineStats, Sources, StepStat } from "../schemas/teaching-material";
+import { writeFileSync, mkdirSync } from "fs";
+
+const LOG_DIR = "/tmp/analysis_logs_v2";
+try {
+  mkdirSync(LOG_DIR, { recursive: true });
+} catch {}
+
+function log(step: string, label: string, data: unknown) {
+  const ts = new Date().toISOString().slice(11, 19);
+  const filename = `${LOG_DIR}/${step}_${label}.txt`;
+  const content =
+    typeof data === "string" ? data : JSON.stringify(data, null, 2);
+  try {
+    writeFileSync(filename, content);
+  } catch {}
+  console.log(
+    `[${ts}] ${step}/${label}: ${content.slice(0, 150)}...`
+  );
+}
+
+const MODEL = process.env.ANALYSIS_MODEL || "bjoernb/gemma4-26b-fast";
+type Send = (e: PipelineEvent) => void;
+
+// Cap persisted raw_text to avoid pathological sizes leaking into saved JSON.
+// Analyzed text is already bounded by ANALYZE_MAX_CHARS in the route handler.
+const RAW_TEXT_STORE_CAP = parseInt(
+  process.env.RAW_TEXT_STORE_CAP || "2000000",
+  10,
+);
+
+export interface SourceInput {
+  rawText?: string;
+  sourceUrl?: string;
+  sourceTitle?: string;
+  pieceTitle?: string;
+  pieceIndex?: number;
+}
+
+export async function orchestrate(
+  text: string,
+  send: Send,
+  sourceInput?: SourceInput,
+): Promise<void> {
+  const t0 = Date.now();
+  const stats: StepStat[] = [];
+  let totalTokens = 0;
+
+  // Quality-signal accumulators (surfaced as warnings at completion).
+  let fallbackCount = 0;
+  let totalExpectedBlocks = 0;
+  let totalReceivedBlocks = 0;
+  const missingBlockIds: string[] = [];
+  const emptyBlockIds: string[] = [];
+
+  // ── Pass 1: Profile ──
+  send({ type: "status", phase: "profile", message: "작품 프로파일 구축 중..." });
+  log("pass1", "input", `${text.length} chars`);
+  const t1 = Date.now();
+  const profileLLM = await callLLM(buildProfilePrompt(text), 5000);
+  const profileTime = (Date.now() - t1) / 1000;
+  log("pass1", "raw", profileLLM.text);
+  const profileParse = safeParseLLM(WorkProfileSchema, profileLLM.text, "Profile");
+  if (!profileParse.ok) fallbackCount++;
+  const profile: WorkProfile = profileParse.data;
+  log("pass1", "parsed_ok", profileParse.ok ? "YES" : "NO (fallback)");
+  log("pass1", "parsed_profile", profile);
+  stats.push({
+    step: 1,
+    label: "Profile",
+    tokens: profileLLM.usage.completionTokens,
+    timeS: profileTime,
+    tokS: Math.round(profileLLM.usage.completionTokens / Math.max(profileTime, 0.1)),
+  });
+  totalTokens += profileLLM.usage.completionTokens;
+  send({ type: "profile_complete", profile });
+
+  // ── Pass 2: Block Batches ──
+  const blocks = splitIntoBlocks(text);
+  const batches = chunkBlocks(blocks, 5);
+  log("pass2", "blocks_count", `${blocks.length} blocks in ${batches.length} batches`);
+  send({
+    type: "status",
+    phase: "blocks",
+    message: `${blocks.length}개 블록을 ${batches.length}개 배치로 분석`,
+  });
+
+  const profileSummary = summarizeProfileForBatch(profile);
+  let rollingSummary = "(첫 배치 — 이전 분석 없음)";
+  const annotated: AnnotatedBlock[] = [];
+  const t2Start = Date.now();
+  let step2Tokens = 0;
+
+  for (let i = 0; i < batches.length; i++) {
+    send({
+      type: "batch_start",
+      batchIndex: i,
+      totalBatches: batches.length,
+      blockIds: batches[i].map((b) => b.blockId),
+    });
+    const prompt = buildBlockBatchPrompt({
+      profileSummary,
+      rollingSummary,
+      previousTranslations: formatPreviousTranslations(annotated, 2),
+      batchIndex: i,
+      totalBatches: batches.length,
+      blocks: batches[i],
+    });
+    const res = await callLLM(prompt, 4000);
+    log("pass2", `batch_${i}_raw`, res.text);
+
+    // Try full-batch parse first
+    let translations: AnnotatedBlock[] = [];
+    let rollingUpdate = "";
+    const parsed = safeParseLLM(BatchResponseSchema, res.text, `Batch ${i}`);
+    if (parsed.data.translations.length > 0) {
+      translations = parsed.data.translations;
+      rollingUpdate = parsed.data.rolling_summary_update;
+    } else {
+      // Fallback: salvage blocks by extracting each block object individually from raw text
+      translations = salvageBlocksFromRaw(res.text);
+      rollingUpdate = extractRollingUpdate(res.text);
+      log("pass2", `batch_${i}_salvaged`, `${translations.length} blocks from raw text`);
+    }
+
+    if (!parsed.ok) fallbackCount++;
+
+    log("pass2", `batch_${i}_parsed`, {
+      ok: parsed.ok,
+      translations: translations.length,
+      expected: batches[i].length,
+    });
+
+    // Coverage: record which expected block ids were returned; flag missing/empty ones.
+    const expectedIds = new Set(batches[i].map((b) => b.blockId));
+    const receivedIds = new Set(translations.map((t) => t.blockId).filter(Boolean));
+    totalExpectedBlocks += expectedIds.size;
+    totalReceivedBlocks += receivedIds.size;
+    for (const id of expectedIds) {
+      if (!receivedIds.has(id)) missingBlockIds.push(id);
+    }
+
+    // Attach originalText back (LLM doesn't need to return it)
+    const byId = new Map(batches[i].map((b) => [b.blockId, b.text]));
+    for (const tr of translations) {
+      if (!tr.originalText) tr.originalText = byId.get(tr.blockId) || "";
+      if (!tr.literary_translation?.trim() || !tr.literal_translation?.trim()) {
+        emptyBlockIds.push(tr.blockId);
+      }
+      annotated.push(tr);
+    }
+    if (rollingUpdate) {
+      rollingSummary = truncate(rollingUpdate, 1500);
+    }
+    step2Tokens += res.usage.completionTokens;
+    totalTokens += res.usage.completionTokens;
+    send({
+      type: "batch_complete",
+      batchIndex: i,
+      blocks: translations,
+      rollingSummary,
+    });
+  }
+  const t2Time = (Date.now() - t2Start) / 1000;
+  stats.push({
+    step: 2,
+    label: "Block Batches",
+    tokens: step2Tokens,
+    timeS: t2Time,
+    tokS: Math.round(step2Tokens / Math.max(t2Time, 0.1)),
+  });
+
+  // ── Pass 3: Revise Flagged ──
+  const flagged = annotated.filter((b) => b.annotations.flag_for_revision);
+  log("pass3", "flagged_count", `${flagged.length} of ${annotated.length}`);
+  if (flagged.length > 0 && flagged.length < annotated.length * 0.5) {
+    send({
+      type: "status",
+      phase: "revise",
+      message: `${flagged.length}개 블록 재검토`,
+    });
+    const t3Start = Date.now();
+    let step3Tokens = 0;
+    for (const b of flagged) {
+      const idx = annotated.findIndex((x) => x.blockId === b.blockId);
+      const prompt = buildRevisePrompt({
+        profileSummary,
+        fullRollingSummary: rollingSummary,
+        flaggedBlock: {
+          blockId: b.blockId,
+          originalText: b.originalText,
+          previousTranslation: {
+            literary: b.literary_translation,
+            literal: b.literal_translation,
+          },
+          flagReason: b.annotations.flag_reason,
+        },
+        neighbors: {
+          before: annotated[idx - 1]?.literary_translation,
+          after: annotated[idx + 1]?.literary_translation,
+        },
+      });
+      const res = await callLLM(prompt, 1500);
+      try {
+        const cleaned = res.text.trim().replace(/^```\w*\s*\n?/, "").replace(/\n?```\s*$/, "");
+        const obj = JSON.parse(cleaned);
+        if (obj.changes_significant !== false) {
+          annotated[idx].revised_literary_translation = obj.revised_literary_translation;
+          annotated[idx].revised_literal_translation = obj.revised_literal_translation;
+          annotated[idx].revision_reason = obj.revision_reason;
+        }
+      } catch {}
+      step3Tokens += res.usage.completionTokens;
+      totalTokens += res.usage.completionTokens;
+      send({ type: "revise_one", blockId: b.blockId });
+    }
+    stats.push({
+      step: 3,
+      label: "Revise",
+      tokens: step3Tokens,
+      timeS: (Date.now() - t3Start) / 1000,
+      tokS: 0,
+    });
+  }
+
+  // ── Synthesis (streamed → JSON) ──
+  send({
+    type: "status",
+    phase: "synthesis",
+    message: "종합 분석 작성 중...",
+  });
+  const annotatedSummary = summarizeBlocksForSynthesis(annotated);
+  const synthPrompt = buildSynthesisPromptV2({ profile, annotatedSummary });
+  let synthRaw = "";
+  let synthTokens = 0;
+  let lastProgressTick = 0;
+  const tSynthStart = Date.now();
+  const gen = streamLLMChunks(synthPrompt, 6000);
+  while (true) {
+    const { done, value } = await gen.next();
+    if (done) {
+      synthTokens = (value as { completionTokens: number })?.completionTokens ?? 0;
+      break;
+    }
+    synthRaw += value;
+    // JSON output; don't stream raw chunks to UI. Send status tick every ~500 chars.
+    if (synthRaw.length - lastProgressTick > 500) {
+      lastProgressTick = synthRaw.length;
+      send({
+        type: "status",
+        phase: "synthesis",
+        message: `종합 분석 작성 중 · ${synthRaw.length.toLocaleString()}자 수신`,
+      });
+    }
+  }
+  totalTokens += synthTokens;
+  stats.push({
+    step: 4,
+    label: "Synthesis",
+    tokens: synthTokens,
+    timeS: (Date.now() - tSynthStart) / 1000,
+    tokS: 0,
+  });
+  log("synthesis", "raw", synthRaw);
+  const synthParse = safeParseLLM(SynthesisSchema, synthRaw, "Synthesis");
+  if (!synthParse.ok) fallbackCount++;
+  const synthesis: Synthesis = synthParse.data;
+  log("synthesis", "parsed_ok", synthParse.ok ? "YES" : "NO (salvaged)");
+  const synthesisPlain = synthesisToPlainText(synthesis);
+
+  // ── Verify (agentic) ──
+  send({ type: "status", phase: "verify", message: "원문 대조 검증 중..." });
+  const verifyRes = await runVerifyAgent(
+    {
+      fullText: text,
+      twistJson: JSON.stringify(profile.twist),
+      report: synthesisPlain,
+      initialEndingChars: 1500,
+      expandedEndingChars: 3000,
+      maxIterations: 3,
+    },
+    (step) => {
+      send({
+        type: "agent_step",
+        agent: "verify",
+        iter: step.iter,
+        action: step.action,
+        status: step.status,
+        contextChars: step.contextChars,
+        issueCount: step.issueCount,
+      });
+    },
+  );
+  totalTokens += verifyRes.tokens;
+  log("verify", "agent_result", {
+    status: verifyRes.status,
+    iterations: verifyRes.iterations,
+    issues: verifyRes.issues.length,
+  });
+  stats.push({
+    step: 5,
+    label: `Verify (agent, ${verifyRes.iterations} iter)`,
+    tokens: verifyRes.tokens,
+    timeS: verifyRes.timeS,
+    tokS: 0,
+  });
+  const verified = verifyRes.status === "VERIFIED";
+  send({
+    type: "verify_complete",
+    verified,
+    status: verifyRes.status,
+    iterations: verifyRes.iterations,
+    issues: verifyRes.issues,
+    text: verifyRes.note || verifyRes.raw[verifyRes.raw.length - 1] || "",
+  });
+
+  // ── Assemble ──
+  const totalTimeS = (Date.now() - t0) / 1000;
+  const pipelineStats: PipelineStats = {
+    totalTokens,
+    totalTimeS: Math.round(totalTimeS * 10) / 10,
+    avgTokS: Math.round(totalTokens / Math.max(totalTimeS, 0.1)),
+    steps: stats,
+  };
+
+  const rawText = sourceInput?.rawText ?? text;
+  const cappedRaw =
+    rawText.length > RAW_TEXT_STORE_CAP
+      ? rawText.slice(0, RAW_TEXT_STORE_CAP)
+      : rawText;
+  const sources: Sources = {
+    raw_text: cappedRaw,
+    analyzed_text: text,
+    source_url: sourceInput?.sourceUrl,
+    source_title: sourceInput?.sourceTitle,
+    piece_title: sourceInput?.pieceTitle,
+    piece_index: sourceInput?.pieceIndex,
+    imported_at: new Date().toISOString(),
+  };
+
+  log("assemble", "annotated_count", `${annotated.length} blocks to assemble`);
+  const teachingMaterial = assemble({
+    profile,
+    blocks: annotated,
+    synthesis,
+    synthesisMd: "",
+    verify: {
+      status: verifyRes.status,
+      note: verified ? undefined : (verifyRes.note ?? "").slice(0, 800) || undefined,
+      issues: verifyRes.issues,
+      iterations: verifyRes.iterations,
+    },
+    stats: pipelineStats,
+    modelUsed: MODEL,
+    source: sourceInput?.sourceUrl,
+    sources,
+  });
+
+  // Compute signals for the Finalization Gate (v2 §3.8)
+  const coverageRatio =
+    totalExpectedBlocks > 0 ? totalReceivedBlocks / totalExpectedBlocks : 1;
+  const uniqueMissing = Array.from(new Set(missingBlockIds));
+  const uniqueEmpty = Array.from(new Set(emptyBlockIds));
+
+  const decision = evaluateFinalizationGate({
+    coverageRatio,
+    totalExpectedBlocks,
+    totalReceivedBlocks,
+    emptyBlockCount: uniqueEmpty.length,
+    verifyStatus: verifyRes.status,
+    verifyIterations: verifyRes.iterations,
+    profileParseOk: profileParse.ok,
+    fallbackCount,
+    hasFatalError: false,
+  });
+
+  log("assemble", "coverage", {
+    expected: totalExpectedBlocks,
+    received: totalReceivedBlocks,
+    missing: uniqueMissing,
+    empty: uniqueEmpty,
+    fallbackCount,
+    gate: decision,
+  });
+
+  // INCOMPLETE — do not persist; allow client to retry
+  if (decision.state === "incomplete") {
+    log("assemble", "incomplete", {
+      reason: decision.reason,
+    });
+    send({
+      type: "incomplete",
+      reason: decision.reason,
+      retryable: true,
+    });
+    return;
+  }
+
+  // Persist for both complete and complete_with_warnings
+  const storageId = saveTeachingMaterial(teachingMaterial);
+  log("assemble", "summary", {
+    id: storageId,
+    state: decision.state,
+    title: teachingMaterial.metadata.title,
+    blocks: teachingMaterial.blocks.length,
+    characters: teachingMaterial.profile.characters.length,
+    foreshadowing: teachingMaterial.profile.foreshadowing.length,
+  });
+
+  if (decision.state === "complete_with_warnings") {
+    send({
+      type: "complete_with_warnings",
+      storageId,
+      synthesisMd: "",
+      warnings: decision.warnings,
+    });
+  } else {
+    send({ type: "complete", storageId, synthesisMd: "" });
+  }
+}
+
+// Salvage individual block objects from raw text by locating { ... } boundaries in translations array
+function salvageBlocksFromRaw(raw: string): AnnotatedBlock[] {
+  // Find "translations": [ ... ] block
+  const tStart = raw.indexOf('"translations"');
+  if (tStart < 0) return [];
+  const arrStart = raw.indexOf("[", tStart);
+  if (arrStart < 0) return [];
+
+  // Walk through the array finding individual object boundaries (depth-tracking)
+  const blocks: AnnotatedBlock[] = [];
+  let i = arrStart + 1;
+  while (i < raw.length) {
+    // Skip whitespace
+    while (i < raw.length && /\s|,/.test(raw[i])) i++;
+    if (raw[i] === "]") break;
+    if (raw[i] !== "{") {
+      i++;
+      continue;
+    }
+    // Walk to matching closing brace
+    let depth = 0;
+    const start = i;
+    let inStr = false;
+    let esc = false;
+    for (; i < raw.length; i++) {
+      const c = raw[i];
+      if (esc) { esc = false; continue; }
+      if (c === "\\") { esc = true; continue; }
+      if (c === '"') { inStr = !inStr; continue; }
+      if (inStr) continue;
+      if (c === "{") depth++;
+      else if (c === "}") {
+        depth--;
+        if (depth === 0) {
+          i++;
+          break;
+        }
+      }
+    }
+    const objText = raw.slice(start, i);
+    // Try to parse this single block
+    const block = tryParseBlock(objText);
+    if (block) blocks.push(block);
+  }
+  return blocks;
+}
+
+function tryParseBlock(objText: string): AnnotatedBlock | null {
+  // Apply common fixes: unquoted keys, extra commas, etc.
+  const attempts: string[] = [objText];
+
+  // Fix: unquoted keys like `_ko_gloss":`
+  attempts.push(objText.replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*":/g, '$1"$2":'));
+
+  // Fix: trailing commas
+  attempts.push(objText.replace(/,(\s*[\]}])/g, "$1"));
+
+  for (const text of attempts) {
+    try {
+      const obj = JSON.parse(text);
+      const result = AnnotatedBlockSchema.safeParse(obj);
+      if (result.success) return result.data;
+      // Use salvage from safe-parse to keep what's valid
+      const partialFallback = AnnotatedBlockSchema.safeParse({});
+      if (partialFallback.success) {
+        const merged = { ...partialFallback.data, ...obj } as Record<string, unknown>;
+        const mergedResult = AnnotatedBlockSchema.safeParse(merged);
+        if (mergedResult.success) return mergedResult.data;
+      }
+    } catch {}
+  }
+  return null;
+}
+
+function extractRollingUpdate(raw: string): string {
+  const m = raw.match(/"rolling_summary_update"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+  return m ? m[1].replace(/\\"/g, '"').replace(/\\n/g, "\n") : "";
+}
+
+function summarizeBlocksForSynthesis(blocks: AnnotatedBlock[]): string {
+  return blocks
+    .map((b) => {
+      const a = b.annotations;
+      const flags = [
+        a.containsForeshadowing ? "복선" : "",
+        a.sceneTransition ? "장면전환" : "",
+        a.toneShift ? `톤변화(${a.toneShift})` : "",
+        a.symbolismPresent.length
+          ? `상징(${a.symbolismPresent.join(",")})`
+          : "",
+      ]
+        .filter(Boolean)
+        .join("; ");
+      return `[${b.blockId}] ${b.korean_commentary}${flags ? ` — ${flags}` : ""}`;
+    })
+    .join("\n");
+}

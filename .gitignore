@@ -1,0 +1,8 @@
+node_modules/
+.next/
+.env*.local
+*.log
+nohup.out
+data/teaching-materials/*.json
+!data/teaching-materials/gift-of-magi-sample.json
+!data/teaching-materials/unfinished-story-sample.json

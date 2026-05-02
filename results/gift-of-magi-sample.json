@@ -1,0 +1,1946 @@
+{
+  "teachingMaterial": {
+    "schema_version": "2.0",
+    "metadata": {
+      "title": "The Gift of the Magi",
+      "author": "O. Henry",
+      "generated_at": "2026-04-19T09:21:07.259Z",
+      "model_used": "bjoernb/gemma4-26b-fast",
+      "tokens_used": 33089,
+      "generation_time_s": 1166.4
+    },
+    "profile": {
+      "title": "The Gift of the Magi",
+      "author": "O. Henry",
+      "meta": {
+        "genre": "short story",
+        "era": "20세기 초 미국",
+        "length_category": "short",
+        "language": "en"
+      },
+      "themes": [
+        "진정한 사랑의 가치",
+        "희생을 통한 숭고함",
+        "물질적 빈곤과 정신적 풍요의 대비"
+      ],
+      "motifs": [
+        "머리카락과 금시계 (가문의 보물)",
+        "크리스마스 선물",
+        "경제적 결핍 (1달러 87센트)"
+      ],
+      "characters": [
+        {
+          "name": "Della",
+          "role": "protagonist",
+          "arc_start": "크리스마스 선물을 사기 위한 돈이 부족하여 절망하고 슬퍼하는 상태입니다. 남편을 위해 자신의 가장 소중한 보물인 머리카락을 팔기로 결심합니다.",
+          "arc_middle": "머리카락을 팔아 플래티넘 시계 줄을 구매하며, 남편이 자신의 변한 모습을 보고 실망할까 봐 불안해하며 기도를 드립니다.",
+          "arc_end": "자신의 희생으로 산 선물이 무용지물이 된 상황에서 슬퍼하지만, 결국 남편의 사랑을 확인하며 헌신적인 사랑의 가치를 보여줍니다.",
+          "defining_traits": [
+            "헌신적임",
+            "감성적임"
+          ],
+          "key_quotes": [
+            {
+              "quote": "Please God, make him think I am still pretty.",
+              "significance": "자신의 외적 변화보다 남편의 시선과 사랑을 더 중요하게 여기는 그녀의 순수한 마음을 나타냄"
+            }
+          ]
+        },
+        {
+          "name": "Jim",
+          "role": "protagonist",
+          "arc_start": "가족을 부양하기 위해 경제적 어려움을 겪고 있는 젊은 가장입니다. 자신의 소중한 유산인 금시계를 지키려 노력합니다.",
+          "arc_middle": "집에 돌아와 변해버린 델라의 모습을 보고 충격과서로 인해 일시적인 망연자실 상태(trance)에 빠집니다.",
+          "arc_end": "자신의 시계를 팔아 아내의 머리빗을 샀음을 밝히며, 두 사람의 희생이 헛되지 않았음을 보여주는 지혜로운 모습을 보입니다.",
+          "defining_traits": [
+            "책임감 있음",
+            "진중함"
+          ],
+          "key_quotes": [
+            {
+              "quote": "I don't think there's anything in the way of a haircut or a shave or a shampoo that could make me like my girl any less.",
+              "significance": "외적인 변화가 사랑의 본질을 바꿀 수 없음을 선언함"
+            }
+          ]
+        }
+      ],
+      "symbolism": [
+        {
+          "symbol": "Della's hair",
+          "meaning": "델라의 아름다움과 자부심, 그리고 남편을 향한 무조건적인 희생",
+          "appearances": [
+            "reaches below her knee",
+            "rippling and shining like a cascade of brown waters"
+          ]
+        },
+        {
+          "symbol": "Jim's gold watch",
+          "meaning": "가문의 전통과 유산, 그리고 남편의 자부심",
+          "appearances": [
+            "had been his father's and his grandfather's"
+          ]
+        },
+        {
+          "symbol": "The Magi",
+          "meaning": "지혜로운 선물 증여의 원형이자, 진정한 가치를 아는 자들",
+          "appearances": [
+            "The magi, as you know, were wise men"
+          ]
+        }
+      ],
+      "foreshadowing": [
+        {
+          "setup": "The 'Dillingham' had been flung to the breeze during a former period of prosperity",
+          "setupLocation": "도입부",
+          "resolution": "Jim이 시계를 팔아 경제적 손실을 입었음을 암시",
+          "effect": "현재의 가난과 과거의 풍요를 대비시켜 앞으로 일어날 경제적 희생을 암시함"
+        }
+      ],
+      "plotStructure": [
+        {
+          "stage": "발단",
+          "summary": "델라는 크리스마스 선물을 사기에 턱없이 부족한 1달러 87센트를 보며 슬퍼합니다.",
+          "evidence_quote": "One dollar and eighty-seven cents. That was all."
+        },
+        {
+          "stage": "전개",
+          "summary": "델라는 남편을 위한 선물을 사기 위해 자신의 아름다운 머리카락을 팔기로 결심하고 실행합니다.",
+          "evidence_quote": "Will you buy my hair? asked Della."
+        },
+        {
+          "stage": "위기",
+          "summary": "남편 짐이 집에 돌아오고, 변해버린 델라의 모습을 보고 멍한 표정으로 그녀를 바라봅니다.",
+          "evidence_quote": "His eyes were fixed upon Della, and there was an expression in them that she could not read"
+        },
+        {
+          "stage": "절정",
+          "summary": "두 사람은 서로를 위해 가장 소중한 것을 팔아 서로에게 쓸모없게 된 선물을 준비했음을 알게 됩니다.",
+          "evidence_quote": "I sold the watch to get the money to buy your combs."
+        },
+        {
+          "stage": "결말",
+          "summary": "작가는 이 두 사람이 비록 어리석어 보일지라도, 가장 지혜로운 '동방박사(Magi)'와 같다고 결론짓습니다.",
+          "evidence_quote": "Of all who give and receive gifts, such as they are wisest."
+        }
+      ],
+      "tone_overall": "따뜻하면서도 애잔하며, 마지막에는 숭고한 교훈을 전달하는 어조",
+      "tone_flow_summary": "도입부에서는 경제적 결핍으로 인한 우울하고 침울한 톤으로 시작됩니다. 중반부에는 선물을 준비하는 과정의 설렘과 불안이 교차하며 긴장감이 고조됩니다. 결말에 이르러서는 두 사람의 희생을 '지혜'로 격상시키며 따뜻하고 경건한 톤으로 마무리됩니다.",
+      "author_style": {
+        "narration": "3인칭 전지적 작가 시점 (화자가 독자에게 직접 말을 거는 듯한 개입적 서술 포함)",
+        "dialect_register": "표준 영어를 사용하되, 화자가 독자에게 'dear friends'라고 부르며 친근하게 말을 거는 구어체적 특징이 있음",
+        "humor_devices": [
+          "아이러니 (Irony)",
+          "풍자적 유머 (Satirical humor)"
+        ],
+        "notable_passages": [
+          {
+            "quote": "Forget the hashed metaphor.",
+            "device": "메타적 서술 (자신의 비유가 서툴렀음을 인정하며 독자와 소통)"
+          }
+        ]
+      },
+      "twist": {
+        "what": "델라는 짐을 위해 시계 줄을 샀지만, 짐은 델라의 머리빗을 사기 위해 자신의 시계를 팔았습니다.",
+        "setup": "She found it at last... It was a platinum fob chain simple and chaste in design",
+        "payoff": "I sold the watch to get the money to buy your combs.",
+        "irony_direction": "두 사람의 선물은 서로의 가장 소중한 소유물을 없애버림으로써 '물질적 가치' 측면에서는 완전히 무용지물이 되었으나, '정신적 가치' 측면에서는 극대화되었습니다.",
+        "comparison": "물질적인 선물(시계 줄, 머리빗)은 쓸모없게 되었으나, 두 사람의 사랑(Magi의 지혜)은 그 무엇보다 가치 있는 것으로 제시됩니다."
+      },
+      "cultural_context": {
+        "era_background": [
+          "20세기 초 미국의 경제적 격차와 중산층 이하의 삶",
+          "크리스마스 전통과 선물 교환 문화"
+        ],
+        "references": [
+          {
+            "term": "Magi",
+            "explanation_ko": "예수의 탄생을 축하하기 위해 찾아온 동방박사로, 지혜로운 자들의 상징"
+          },
+          {
+            "term": "Queen of Sheba / King Solomon",
+            "explanation_ko": "성경 속의 부유하고 지혜로운 왕들로, 델라와 짐의 보물이 얼마나 가치 있는지를 강조하기 위한 비교 대상"
+          }
+        ]
+      },
+      "korean_brief": {
+        "theme_ko": "진정한 사랑은 물질적 소유를 초월한 자기희생을 통해 완성된다.",
+        "message_ko": "가장 소중한 것을 포기할 수 있는 용기가 가장 지혜로운 사랑의 형태이다."
+      }
+    },
+    "blocks": [
+      {
+        "blockId": "block_001",
+        "originalText": "THE GIFT OF THE MAGI",
+        "literary_translation": "동방박사의 선물",
+        "literal_translation": "동방박사들의 선물",
+        "korean_commentary": "",
+        "annotations": {
+          "containsForeshadowing": false,
+          "foreshadowingSetupRef": null,
+          "containsCallback": false,
+          "callbackRef": null,
+          "toneShift": null,
+          "sceneTransition": false,
+          "symbolismPresent": [
+            "The Magi"
+          ],
+          "literaryDevices": [
+            {
+              "device": "symbolism",
+              "description_ko": "제목 자체가 작품 전체의 주제인 '진정한 가치를 아는 지혜로운 선물'을 상징함"
+            }
+          ],
+          "culturalReferences": [
+            {
+              "term": "Magi",
+              "explanation_ko": "예수의 탄생을 축하하기 위해 찾아온 동방의 현자들로, 성경적 맥락에서 지혜로운 선물을 주는 자들을 의미함"
+            }
+          ],
+          "key_vocabulary": [
+            {
+              "en": "Magi",
+              "pronunciation": "메이지",
+              "part_of_speech": "n.",
+              "ko_gloss": "동방박사",
+              "context_note_ko": "단순한 마술사가 아닌, 지혜로운 현자를 뜻함"
+            }
+          ],
+          "notable_quote": null,
+          "dialogueSpeaker": null,
+          "ambiguity_level": "low",
+          "translation_difficulty": "low",
+          "flag_for_revision": false,
+          "flag_reason": ""
+        },
+        "korean_comment략": "작품의 제목을 제시합니다. 성경 속 동방박사(Magi)의 이야기를 인용하여, 단순한 선물을 넘어선 지혜롭고 숭고한 희생의 의미를 암시합니다."
+      },
+      {
+        "blockId": "block_002",
+        "originalText": "One dollar and eighty-seven cents. That was all. And sixty cents of it\nwas in pennies. Pennies saved one and two at a time by bulldozing the\ngrocer and the vegetable man and the butcher until one’s cheeks burned\nwith the silent imputation of parsimony that such close dealing\nimplied. Three times Della counted it. One dollar and eighty-seven\ncents. And the next day would be Christmas.",
+        "literary_translation": "단돈 1달러 87센트. 그것이 전부였다. 그중 60센트는 1센트짜리 동전들이었다. 식료품점 주인과 채소 가게 주인, 그리고 정육점 주인과 한 푼이라့도 깎으려 실랑이를 벌이다 보면, 스스로가 너무나 인색하게 느껴져 얼굴이 화끈거릴 정도였다. 델라는 그 동전들을 세 번이나 다시 확인했다. 1달러 87센트. 그리고 내일은 크리스마스였다.",
+        "literal_translation": "1달러와 87센트. 그것이 전부였다. 그리고 그것 중 60센트는 페니(1센트 동전)였다. 식료품업자와 채소 판매업자, 그리고 정육점 업자를 몰아붙이며 한 푼 두 푼 모은 페니들은, 그러한 치밀한 거래가 암시하는 인색함이라는 무언의 비난 때문에 뺨이 타오를 정도였다. 델라는 그것을 세 번 셌다. 1달러와 87센트. 그리고 다음 날은 크맷였다.",
+        "korean_commentary": "주인공 델라가 크리스마스 선물을 사기 위해 모은 돈이 매우 적음을 보여줍니다. 돈을 아끼기 위해 상인들과 실랑이를 벌이며 자존심까지 상해가며 모은 돈이라는 점에서 그녀의 절박함이 드러납니다.",
+        "annotations": {
+          "containsForeshadowing": false,
+          "foreshadowingSetupRef": null,
+          "containsCallback": false,
+          "callbackRef": null,
+          "toneShift": "desperate",
+          "sceneTransition": false,
+          "symbolismPresent": [],
+          "literaryDevices": [
+            {
+              "device": "hyperbole",
+              "description_ko": "인색하다는 비난 때문에 뺨이 타오를 정도라는 표현을 통해 델라의 심리적 압박감을 극대화함"
+            }
+          ],
+          "culturalReferences": [],
+          "key_vocabulary": [
+            {
+              "en": "parsimony",
+              "pronunciation": "파시머니",
+              "part_of_speech": "n.",
+              "ko_gloss": "인색함",
+              "context_note_ko": "단순히 아끼는 것을 넘어 부정적인 의미의 인색함을 뜻함"
+            },
+            {
+              "en": "bulldozing",
+              "pronunciation": "불도징",
+              "part_of_speech": "v.",
+              "ko_gloss": "몰아붙이다/압박하다",
+              "context_note_ko": "상인들과 가격 협상을 치열하게 하는 모습을 묘사"
+            }
+          ],
+          "notable_quote": null,
+          "dialogueSpeaker": null,
+          "ambiguity_level": "low",
+          "translation_difficulty": "medium",
+          "flag_for_revision": false,
+          "flag_reason": ""
+        }
+      },
+      {
+        "blockId": "block_003",
+        "originalText": "There was clearly nothing to do but flop down on the shabby little\ncouch and howl. So Della did it. Which instigates the moral reflection\nthat life is made up of sobs, sniffles, and smiles, with sniffles\npredominating.",
+        "literary_translation": "낡고 작은 소파에 털썩 주저앉아 울어버리는 것 외에는 달리 방법이 없었다. 델라는 정말 그렇게 했다. 이는 인생이란 흐느낌과 훌쩍임, 그리고 미소로 이루어져 있으며, 그중 훌쩍임이 가장 큰 비중을 차지한다는 도덕적 성찰을 불러일으킨다.",
+        "literal_translation": "낡은 작은 소파 위에 쓰러져 울부짖는 것 외에는 분명히 할 수 있는 것이 없었다. 그래서 델라는 그렇게 했다. 이는 인생은 흐느낌, 훌쩍임, 그리고 미소로 구성되어 있으며, 훌쩍임이 우세하다는 도덕적 성찰을 유발한다.",
+        "korean_commentary": "경제적 어려움 앞에서 무력감을 느끼는 델라의 슬픔을 묘사합니다. 작가는 이를 통해 인생의 비애를 관조적인 어조로 서술합니다.",
+        "annotations": {
+          "containsForeshadowing": false,
+          "foreshadowingSetupRef": null,
+          "containsCallback": false,
+          "callbackRef": null,
+          "toneShift": "philosophical/melancholic",
+          "sceneTransition": false,
+          "symbolismPresent": [],
+          "literaryDevices": [
+            {
+              "device": "aphorism",
+              "description_ko": "인생의 구성 요소를 'sobs, sniffles, and smiles'로 정의하며 격언적인 문장을 사용함"
+            }
+          ],
+          "culturalReferences": [],
+          "key_vocabulary": [
+            {
+              "en": "instigates",
+              "pronunciation": "인스티게이츠",
+              "part_of_speech": "v.",
+              "ko_gloss": "유발하다",
+              "context_note_ko": "어떤 생각이나 반응을 불러일으킨다는 의미"
+            },
+            {
+              "en": "predominating",
+              "pronunciation": "프리도미네이팅",
+              "part_of_speech": "adj./v.",
+              "ko_gloss": "우세한/지배적인",
+              "context_note_ko": "인생에서 슬픔의 비중이 더 크다는 것을 강조"
+            }
+          ],
+          "notable_quote": null,
+          "dialogueSpeaker": null,
+          "ambiguity_level": "low",
+          "translation_difficulty": "low",
+          "flag_for_revision": false,
+          "flag_reason": ""
+        }
+      },
+      {
+        "blockId": "block_004",
+        "originalText": "While the mistress of the home is gradually subsiding from the first\nstage to the second, take a look at the home. A furnished flat at $8\nper week. It did not exactly beggar description, but it certainly had\nthat word on the lookout for the mendicancy squad.",
+        "literary_translation": "집주인이 첫 번째 단계에서 두 번째 단계(울음)로 서서히 넘어가는 동안, 집 안을 한번 살펴보자. 주당 8달러짜리 가구가 갖춰진 아파트다. 딱히 묘사할 가치도 없을 만큼 초라하진 않았지만, 분명 구걸하는 사람들을 단속하는 순찰대가 눈여겨볼 만한 수준이긴 했다.",
+        "literal_translation": "집의 여주인이 점진적으로 첫 번째 단계에서 두 것이로 가라앉는 동안, 집을 한번 보자. 주당 8달러의 가구가 비치된 아파트. 그것은 정확히 묘사를 불가능하게 만들 정도는 아니었지만, 확실히 구걸 단속반이 경계할 만한 단어였다.",
+        "korean_commentary": "델라가 사는 집의 경제적 상황을 묘사합니다. 매우 가난한 형편임을 시각적으로 보여줍니다.",
+        "annotations": {
+          "containsForeshadowing": false,
+          "foreshadowingSetupRef": null,
+          "containsCallback": false,
+          "callbackRef": null,
+          "toneShift": "observational/witty",
+          "sceneTransition": true,
+          "symbolismPresent": [],
+          "literaryDevices": [
+            {
+              "device": "irony",
+              "description_ko": "가난한 형편을 '구걸 단속반이 눈여겨볼 만하다'는 위트 있는 표현으로 풍자함"
+            }
+          ],
+          "culturalReferences": [
+            {
+              "term": "mendicancy squad",
+              "explanation_ko": "과거 미국에서 부랑자나 구걸하는 사람들을 단속하던 경찰 부대"
+            }
+          ],
+          "key_vocabulary": [
+            {
+              "en": "subsiding",
+              "pronunciation": "섭사이딩",
+              "part_of_speech": "v.",
+              "ko_gloss": "가라앉다",
+              "context_note_ko": "격앙된 감정이 진정되는 과정을 묘사"
+            },
+            {
+              "en": "beggar",
+              "pronunciation": "베거",
+              "part_of_speech": "v.",
+              "ko_gloss": "묘사할 수 없게 만들다",
+              "context_note_ko": "여기서는 '너무 가난해서 말로 다 설명하기 힘들다'는 의미의 비유적 사용"
+            }
+          ],
+          "notable_quote": null,
+          "dialogueSpeaker": null,
+          "ambiguity_level": "medium",
+          "translation_difficulty": "medium",
+          "flag_for_revision": false,
+          "flag_reason": ""
+        }
+      },
+      {
+        "blockId": "block_005",
+        "originalText": "In the vestibule below was a letter-box into which no letter would go,\nand an electric button from which no mortal finger could coax a ring.\nAlso appertaining thereunto was a card bearing the name “Mr. James\nDillingham Young.” The “Dillingham” had been flung to the breeze during\na former period of prosperity when its possessor was being paid $30 per\nweek. Now, when the income was shrunk to $20, the letters of\n“Dillingham” looked blurred, as though they were thinking seriously of\ncontracting to a modest and unassuming D. But whenever Mr. James\nDillingham Young came home and reached his flat above he was called\n“Jim” and greatly hugged by Mrs. James Dillingham Young, already",
+        "literary_translation": "아래층 현관에는 편지가 들어갈 곳도 없는 우편함과, 그 어떤 사람의 손가락으로도 벨을 울릴 수 없는 전기 벨이 있었다. 또한 그곳에는 '제임스 딜링햄 영 씨'라는 이름이 적힌 명패도 붙어 있었다. '딜링햄'이라는 성은 주인인 짐의 수입이 주당 30달러였던 번창하던 시절에 위풍당당하게 내걸려 있었다. 이제 수입이 20달러로 줄어들자, '딜링햄'이라는 글자들은 마치 겸손하고 수수한 'D'로 줄어들 생각을 진지하게 하는 듯 흐릿해 보였다. 하지만 제임스 딜링햄 영 씨가 집에 돌아와 위층 아파트에 도착할 때면, 그는 언제나 '짐'이라 불렸고, 이미 (준비된) 제임스 딜링햄 영 부인의 따뜻한 포옹을 받곤 했다.",
+        "literal_translation": "아래층 현관에는 어떤 편지도 들어갈 수 없는 우편함과, 어떤 필멸자의 손가락도 벨을 울리게 유도할 수 없는 전기 버튼이 있었다. 또한 그곳에 부속된 것은 'Mr. James Dillingham Young'이라는 이름을 가진 카드였다. 'Dillingham'은 소유자가 주당 30달러를 받던 이전의 번영의 시기 동안 바람에 휘날리고 있었다. 이제 수입이 20달러로 줄어들었을 때, 'Dillingham'의 글자들은 마치 겸손하고 수수한 D로 계약을 맺을 것을 진지하게 생각하는 것처럼 흐릿해 보였다. 하지만 제임스 딜링햄 영 씨가 집에 돌아와 위층의 아파트에 닿을 때마다 그는 'Jim'이라 불렸고, 제임스 딜링햄 영 부인에 의해 크게 안겼다.",
+        "korean_commentary": "집의 낡은 상태와 함께, 부부의 경제적 하락(30달러 -> 20달러)을 보여줍니다. 하지만 이름이 줄어드는 듯한 묘사와 대조적으로, 부부 사이의 애정은 여전함을 나타냅니다.",
+        "annotations": {
+          "containsForeshadowing": true,
+          "foreshadowingSetupRef": "The 'Dillingham' had been flung to the breeze during a former period of prosperity",
+          "containsCallback": false,
+          "callbackRef": null,
+          "toneShift": "nostalgic/tender",
+          "sceneTransition": false,
+          "symbolismPresent": [
+            "The name 'Dillingham'"
+          ],
+          "literaryDevices": [
+            {
+              "device": "personification",
+              "description_ko": "글자들이 'D'로 줄어들 생각을 한다는 의인화를 통해 경제적 쇠퇴를 문학적으로 표현함"
+            }
+          ],
+          "culturalReferences": [],
+          "key_vocabulary": [
+            {
+              "en": "appertaining",
+              "pronunciation": "어퍼테이닝",
+              "part_of_speech": "adj./v.",
+              "ko_gloss": "부속된/관련된",
+              "context_note_ko": "명패가 우편함 근처에 붙어 있음을 나타냄"
+            },
+            {
+              "en": "prosperity",
+              "pronunciation": "프로스페리티",
+              "part_of_speech": "n.",
+              "ko_gloss": "번영/번창",
+              "context_note_ko": "과거 30달러 수입 시절을 지칭"
+            }
+          ],
+          "notable_quote": null,
+          "dialogueSpeaker": null,
+          "ambiguity_level": "low",
+          "translation_difficulty": "medium",
+          "flag_for_revision": false,
+          "flag_reason": ""
+        }
+      },
+      {
+        "blockId": "block_006",
+        "originalText": "introduced to you as Della. Which is all very good.",
+        "literary_translation": "그녀는 델라라는 이름으로 우리에게 소개된다. 이보다 더 완벽한 도입이 어디 있겠는가.",
+        "literal_translation": "당신에게 델라로서 소개되었다. 그것은 매우 좋은 일이다.",
+        "korean_commentary": "작가가 독자에게 주인공 델라를 직접적으로 소개하며 이야기를 시작합니다. 짧은 문장이지만 주인공에 대한 친근감을 형성합니다.",
+        "annotations": {
+          "containsForeshadowing": false,
+          "foreshadowingSetupRef": null,
+          "containsCallback": false,
+          "callbackRef": null,
+          "toneShift": "neutral",
+          "sceneTransition": false,
+          "symbolismPresent": [],
+          "literaryDevices": [
+            {
+              "device": "direct address",
+              "description_ko": "작가가 독자에게 직접 말을 거는 듯한 어조를 사용하여 친밀감을 형성함"
+            }
+          ],
+          "culturalReferences": [],
+          "key_vocabulary": [
+            {
+              "en": "introduced to you",
+              "pronunciation": "인트러듀스드 투 유",
+              "part_of_speech": "v. phrase",
+              "ko_gloss": "당신에게 소개되다",
+              "context_note_ko": "독자를 이야기의 관찰자로 끌어들이는 표현"
+            }
+          ],
+          "notable_quote": null,
+          "dialogueSpeaker": "Narrator",
+          "ambiguity_level": "low",
+          "translation_difficulty": "low",
+          "flag_for_revision": false,
+          "flag_reason": ""
+        }
+      },
+      {
+        "blockId": "block_007",
+        "originalText": "Della finished her cry and attended to her cheeks with the powder rag.\nShe stood by the window and looked out dully at a grey cat walking a\ngrey fence in a grey backyard. Tomorrow would be Christmas Day, and she\nhad only $1.87 with which to buy Jim a present. She had been saving\nevery penny she could for months, with this result. Twenty dollars a\nweek doesn’t go far. Expenses had been greater than she had calculated.\nThey always are. Only $1.87 to buy a present for Jim. Her Jim. Many a\nhappy hour she had spent planning for something nice for him. Something\nfine and rare and sterling—something just a little bit near to being\nworthy of the honour of being owned by Jim.",
+        "literary_translation": "델라는 울음을 그치고 파우더 천으로 뺨을 매만졌다. 그녀는 창가에 서서 회색 뒷마당의 회색 울타리를 걷고 있는 회색 고양이를 멍하니 바라보았다. 내일은 크리스마스였지만, 짐에게 줄 선물을 사기 위해 그녀가 가진 돈은 고작 1달러 87센트뿐이었다. 몇 달 동안 한 푼 두 푼 아껴 모은 결과가 이것이라니. 주당 20달러라는 수입으로는 형편이 나아지기 어려웠다. 예상했던 지출보다 늘어난 비용이 그녀를 짓눌렀다. 언제나 그렇듯 말이다. 짐을 위해 쓸 돈은 단 1달러 87센트. 오직 짐을 위한, 그녀의 짐을 위한 선물. 그녀는 그를 위해 멋진 선물을 고르며 행복한 시간을 보냈었다. 아주 근사하고, 희귀하며, 순도 높은 것—짐이 소유한다는 영광에 조금이라도 어울릴 만한 그런 선물을 말이다.",
+        "literal_translation": "델라는 울음을 마쳤고 파우더 천으로 그녀의 뺨을 돌보았다. 그녀는 창가에 서서 회색 뒷마당의 회색 울타리를 걷는 회색 고양이를 멍하니 바라보았다. 내일은 크리스마스 날일 것이고, 그녀는 짐에게 선물을 사기 위해 단 1.87달러만을 가지고 있었다. 그녀는 몇 달 동안 가능한 모든 푼돈을 저축해 왔으나, 결과는 이랬다. 주당 20달러는 멀리 가지 못한다. 지출은 그녀가 계산했던 것보다 더 컸다. 항상 그렇듯이. 짐을 위한 선물을 사기 위해 단 1.87달러뿐. 그녀의 짐을 위한. 그녀는 그를 위한 좋은 것을 계획하며 많은 행복한 시간을 보냈다. 멋지고, 희귀하며, 순수한 것—짐이 소유하는 영광에 조금이라도 가까운 무언가를.",
+        "korean_commentary": "델라의 경제적 절망감과 짐을 향한 깊은 애정이 대비됩니다. 회색빛 묘사를 통해 그녀의 우울한 심리 상태를 시각화합니다.",
+        "annotations": {
+          "containsForeshadowing": false,
+          "foreshadowingSetupRef": null,
+          "containsCallback": false,
+          "callbackRef": null,
+          "toneShift": "melancholic",
+          "sceneTransition": false,
+          "symbolismPresent": [
+            "grey cat/fence/backyard"
+          ],
+          "literaryDevices": [
+            {
+              "device": "repetition",
+              "description_ko": "'grey'라는 단어를 반복 사용하여 단조롭고 암울한 분위기를 강조함"
+            },
+            {
+              "device": "ellipsis/fragmentation",
+              "description_ko": "문장을 파편화하여 델라의 절망적인 감정과 짧은 호흡을 표현함"
+            }
+          ],
+          "culturalReferences": [],
+          "key_vocabulary": [
+            {
+              "en": "sterling",
+              "pronunciation": "스털링",
+              "part_of_speech": "adj.",
+              "ko_gloss": "순수한, 가치 있는",
+              "context_note_ko": "금의 순도나 화폐의 가치를 나타낼 때 쓰이며, 여기서는 선물의 가치를 강조함"
+            },
+            {
+              "en": "attend to",
+              "pronunciation": "어텐드 투",
+              "part_of_speech": "v. phrase",
+              "ko_gloss": "~을 돌보다, 처리하다",
+              "context_note_ko": "여기서는 울음을 그친 후 얼굴을 가다듬는 행위를 의미함"
+            }
+          ],
+          "notable_quote": "Only $1.87 to buy a present for Jim. Her Jim.",
+          "dialogueSpeaker": "Narrator",
+          "ambiguity_level": "low",
+          "translation_difficulty": "medium",
+          "flag_for_revision": false,
+          "flag_reason": "",
+          "forendow_setupRef": null
+        }
+      },
+      {
+        "blockId": "block_009",
+        "originalText": "Suddenly she whirled from the window and stood before the glass. Her\neyes were shining brilliantly, but her face had lost its colour within\ntwenty seconds. Rapidly she pulled down her hair and let it fall to its\nfull length.",
+        "literary_translation": "갑자기 그녀는 창가에서 몸을 돌려 거울 앞에 섰다. 눈동자는 찬란하게 빛나고 있었지만, 20초도 지나지 않아 얼굴에서 핏기가 가셨다. 그녀는 재빨리 머리카락을 풀어헤쳐 그 길이를 온전히 늘어뜨렸다.",
+        "literal_translation": "갑자기 그녀는 창문으로부터 회전하여 거울 앞에 섰다. 그녀의 눈은 밝게 빛나고 있었지만, 그녀의 얼굴은 20초 이내에 색을 잃었다. 빠르게 그녀는 그녀의 머리카락을 아래로 당겨 그것이 전체 길로 떨어지게 했다.",
+        "korean_commentary": "결심을 굳히는 델라의 행동을 묘사합니다. 머리카락을 푸는 행위는 뒤에 이어질 희생을 위한 준비 단계입니다.",
+        "annotations": {
+          "containsForeshadowing": true,
+          "foreshadowingSetupRef": "Della's hair (symbol of sacrifice)",
+          "containsCallback": false,
+          "callbackRef": null,
+          "toneShift": "dramatic",
+          "sceneTransition": true,
+          "symbolismPresent": [
+            "Della's hair"
+          ],
+          "literaryDevices": [
+            {
+              "device": "visual imagery",
+              "description_ko": "눈의 빛과 창백해진 얼굴의 대비를 통해 극적인 감정 변화를 묘사함"
+            }
+          ],
+          "culturalReferences": [],
+          "key_vocabulary": [
+            {
+              "en": "whirled",
+              "pronunciation": "월드",
+              "part_of_speech": "v.",
+              "ko_gloss": "휙 돌다",
+              "context_note_ko": "갑작스러운 결심과 움직임을 나타냄"
+            },
+            {
+              "en": "lost its colour",
+              "pronunciation": "로스트 잇츠 컬러",
+              "part_of_speech": "idiom",
+              "ko_gloss": "창백해지다",
+              "context_note_ko": "긴장이나 결심으로 인한 신체적 변화"
+            }
+          ],
+          "notable_quote": null,
+          "dialogueSpeaker": "Narrator",
+          "ambiguity_level": "low",
+          "translation_difficulty": "low",
+          "flag_for_revision": false,
+          "flag_reason": ""
+        }
+      },
+      {
+        "blockId": "block_010",
+        "originalText": "Now, there were two possessions of the James Dillingham Youngs in which\nthey both took a mighty pride. One was Jim’s gold watch that had been\nhis father’s and his grandfather’s. The other was Della’s hair. Had the\nQueen of Sheba lived in the flat across the airshaft, Della would have\nlet her hair hang out the window some day to dry just to depreciate Her\nMajesty’s jewels and gifts. Had King Solomon been the janitor, with all\nhis treasures piled up in the basement, Jim would have pulled out his\nwatch every time he passed, just to see him pluck at his beard from\nenvy.",
+        "literary_translation": "이제 제임스 딜링햄 영 부부에게는 서로 큰 자부심을 느끼게 하는 두 가지 보물이 있었다. 하나는 짐의 아버지와 할아버지로부터 물려받은 그의 금시계였다. 다른 하나는 델라의 머리카락이었다. 만약 시바 여왕이 맞은편 아파트에 살았다면, 델라는 언젠가 자신의 머리카락을 창밖으로 늘어뜨려 말림으로써 여왕의 보석과 선물들을 무색하게 만들었을 것이다. 만약 솔로몬 왕이 건물 관리인이 되어 지하에 온갖 보물을 쌓아두고 있었다 하더라도, 짐은 그를 지나칠 때마다 시계를 꺼내 보여주어, 솔로몬이 질투심에 수염을 잡아뜯게 만들었을 것이다.",
+        "literal_translation": "이제, 제임스 딜링햄 영 부부가 가진 두 가지 소유물 중 그들 모두가 커다란 자부심을 느끼는 것이 있었다. 하나는 그의 아버지와 그의 할아버지였던 짐의 금시계였다. 다른 하나는 델라의 머리카락이었다. 만약 시바 여왕이 환기창 맞은편 아파트에 살았다면, 델라는 여왕의 보석과 선물들을 가치를 떨어뜨리기 위해 언젠가 그녀의 머리카락을 말리기 위해 창밖으로 내걸었을 것이다. 만약 솔로몬 왕이 관리인이 되어, 그의 모든 보물이 지하실에 쌓여 있었다면, 짐은 그가 지나갈 때마다 그의 시계를 꺼내 보여주어, 그가 질투로 그의 수염을 뽑게 만들었을 것이다.",
+        "korean_commentary": "부부의 가장 소중한 두 상징(시계와 머리카락)을 소개하며, 성경 속 인물들을 인용해 그 가치를 극대화하여 묘사합니다.",
+        "annotations": {
+          "containsForeshadowing": false,
+          "foreshadowingSetupRef": null,
+          "containsCallback": false,
+          "callbackRef": null,
+          "toneShift": "grand/hyperbolic",
+          "sceneTransition": false,
+          "symbolismPresent": [
+            "Jim's gold watch",
+            "Della's hair"
+          ],
+          "literaryDevices": [
+            {
+              "device": "hyperbole",
+              "description_ko": "시바 여왕과 솔로몬 왕을 언급하며 부부의 보물이 얼마나 위대한지를 과장하여 표현함"
+            },
+            {
+              "device": "allusion",
+              "description_ko": "성경 속 인물(시바 여왕, 솔로몬 왕)을 인용하여 상징적 가치를 높임"
+            }
+          ],
+          "culturalReferences": [
+            {
+              "term": "Queen of Sheba",
+              "explanation_ko": "성경에 등장하는 지혜와 부의 상징인 시바 여왕"
+            },
+            {
+              "term": "King Solomon",
+              "explanation_ko": "지혜와 막대한 부를 가진 것으로 알려진 솔로몬 왕"
+            }
+          ],
+          "key_vocabulary": [
+            {
+              "en": "possessions",
+              "pronunciation": "포제션스",
+              "part_of_speech": "n.",
+              "ko_gloss": "소유물, 재산",
+              "context_note_ko": "부부의 소중한 자산을 의미함"
+            },
+            {
+              "en": "depreciate",
+              "pronunciation": "디프리시에이트",
+              "part_of_speech": "v.",
+              "ko_gloss": "가치를 떨어뜨리다",
+              "context_note_ko": "머리카락의 아름다움이 보석보다 더 빛남을 강조하기 위해 사용됨"
+            }
+          ],
+          "notable_quote": "One was Jim’s gold watch... The other was Della’s hair.",
+          "dialogueSpeaker": "Narrator",
+          "ambiguity_level": "low",
+          "translation_difficulty": "high",
+          "flag_for_revision": false,
+          "flag_reason": ""
+        }
+      },
+      {
+        "blockId": "block_011",
+        "originalText": "So now Della’s beautiful hair fell about her, rippling and shining like\na cascade of brown waters. It reached below her knee and made itself\nalmost a garment for her. And then she did it up again nervously and\nquickly. Once she faltered for a minute and stood still while a tear or\ntwo splashed on the worn red carpet.",
+        "literary_translation": "이제 델라의 아름다운 머리카락이 갈색 폭포처럼 물결치며 빛을 내며 그녀의 몸을 감싸 안았다. 무릎 아래까지 내려오는 그 머리카락은 마치 그녀가 입은 옷처럼 보일 정도였다. 그러다 그녀는 다시 초조하고 빠르게 머리를 말아 올렸다. 잠시 망설이며 가만히 서 있는 사이, 낡은 붉은 카펫 위로 눈물 한두 방కు가 툭 하고 떨어졌다.",
+        "literal_translation": "이제 델라의 아름다운 머리카락이 그녀의 주변으로 흘러내렸는데, 갈색 물의 폭포처럼 물결치며 빛나고 있었다. 그것은 그녀의 무릎 아래까지 닿았고 그녀를 위해 거의 의복이 되어주었다. 그리고 나서 그녀는 다시 초조하고 빠르게 그것을 위로 올렸다. 한 번은 그녀가 잠시 주춤하며 가만히 서 있었고, 낡은 붉은 카펫 위로 눈물 한두 방울이 튀었다.",
+        "korean_commentary": "결심을 굳히기 전, 자신의 가장 소중한 상징인 머리카락을 내려다보며 겪는 내적 갈등을 보여줍니다. 머리카락의 아름다움을 묘사하면서도, 곧이어 나타나는 눈물을 통해 희생에 따르는 슬픔을 암시합니다.",
+        "annotations": {
+          "containsForeshadowing": true,
+          "foreshadowingSetupRef": "Della's hair as a symbol of pride and sacrifice",
+          "containsCallback": false,
+          "callbackRef": null,
+          "toneShift": "from awe to sadness",
+          "sceneTransition": false,
+          "symbolismPresent": [
+            "Della's hair"
+          ],
+          "literaryDevices": [
+            {
+              "device": "simile",
+              "description_ko": "머리카락을 '갈색 폭포(cascade of brown waters)'에 비유하여 그 풍성함과 아름다움을 극대화함"
+            }
+          ],
+          "culturalReferences": [],
+          "key_vocabulary": [
+            {
+              "en": "cascade",
+              "pronunciation": "캐스케이드",
+              "part_of_speech": "n.",
+              "ko_gloss": "폭포, 작은 폭포",
+              "context_note_ko": "머리카락이 쏟아져 내리는 모습을 시각적으로 화려하게 묘사함"
+            },
+            {
+              "en": "falter",
+              "pronunciation": "폴터",
+              "part_of_speech": "v.",
+              "ko_gloss": "주춤하다, 망설이다",
+              "context_note_ko": "결단을 내리기 직전의 심리적 불안을 나타냄"
+            }
+          ],
+          "notable_quote": null,
+          "dialogueSpeaker": null,
+          "ambiguity_level": "low",
+          "translation_difficulty": "low",
+          "flag_for_revision": false,
+          "flag_reason": ""
+        }
+      },
+      {
+        "blockId": "block_012",
+        "originalText": "On went her old brown jacket; on went her old brown hat. With a whirl\nof skirts and with the brilliant sparkle still in her eyes, she\nfluttered out the door and down the stairs to the street.",
+        "literary_translation": "그녀는 낡은 갈색 재킷을 걸치고, 낡은 갈색 모자를 썼다. 치맛자락을 휘날리며, 눈동에는 여전히 찬란한 빛을 머금은 채, 그녀는 문을 나서 계단을 뛰어 내려가 거리로 나섰다.",
+        "literal_translation": "그녀의 오래된 갈casade 갈색 재킷이 입혀졌다; 그녀의 오래된 갈색 모자가 입혀졌다. 치마의 회전과 함께, 그리고 그녀의 눈 속에 여전히 찬란한 반짝임과 함께, 그녀는 문 밖으로 파닥거리며 나가 계단을 지나 거리로 내려갔다.",
+        "korean_commentary": "외출 준비를 마친 델라의 모습입니다. 낡은 옷차림(경제적 빈곤)과 빛나는 눈동자(사랑의 의지)가 대비를 이룹니다.",
+        "annotations": {
+          "containsForeshadowing": false,
+          "foreshadowingSetupRef": null,
+          "containsCallback": false,
+          "callbackRef": null,
+          "toneShift": "energetic",
+          "sceneTransition": true,
+          "symbolismPresent": [],
+          "literaryDevices": [
+            {
+              "device": "contrast",
+              "description_ko": "낡은 옷(old jacket/hat)과 빛나는 눈(brilliant sparkle)을 대비시켜 물질적 가난과 정신적 열정을 대조함"
+            }
+          ],
+          "culturalReferences": [],
+          "key_vocabulary": [
+            {
+              "en": "with a whirl of skirts",
+              "pronunciation": "위드 어 월 오브 스커츠",
+              "part_of_speech": "idiom",
+              "ko_gloss": "치맛자락을 휘날리며",
+              "context_note_ko": "들뜬 마음이나 급한 발걸음을 시각적으로 표현"
+            }
+          ],
+          "notable_quote": null,
+          "dialogueSpeaker": null,
+          "ambiguity_level": "low",
+          "translation_difficulty": "low",
+          "flag_for_revision": false,
+          "flag_reason": ""
+        }
+      },
+      {
+        "blockId": "block_013",
+        "originalText": "Where she stopped the sign read: “Mme. Sofronie. Hair Goods of All\nKinds.” One flight up Della ran, and collected herself, panting.\nMadame, large, too white, chilly, hardly looked the “Sofronie.”\n\n“Will you buy my hair?” asked Della.",
+        "literary_translation": "그녀가 멈춰 선 곳의 간판에는 '소프로니 부인: 각종 헤어 용품'이라고 적혀 있었다. 델라는 숨을 헐떡이며 한 층 위로 뛰어 올라가 마음을 가다듬었다. 부인은 덩치가 크고, 지나치게 창백하며, 냉담한 인상이라 '소프로ey'라는 이름과는 전혀 어울리지 않아 보였다.",
+        "literal_translation": "그녀가 멈춘 곳의 표지판은 읽혔다: '소프로니 부인. 모든 종류의 헤어 용품.' 한 층 위로 델라는 달렸고, 헐떡이며 자신을 가다듬었다. 부인은, 거대하고, 너무 하얗고, 차가웠으며, 거의 '소프로니'처럼 보이지 않았다.",
+        "korean_commentary": "머리카락을 팔기 위해 찾아간 가게와 그곳의 주인인 소프로니 부인을 소개합니다. 부인의 차가운 인상은 델라의 따뜻한 마음과 대조를 이룹니다.",
+        "annotations": {
+          "containsForeshadowing": false,
+          "foreshadowingSetupRef": null,
+          "containsCallback": false,
+          "callbackRef": null,
+          "toneShift": "neutral to cold",
+          "sceneTransition": true,
+          "symbolismPresent": [],
+          "literaryDevices": [
+            {
+              "device": "characterization",
+              "description_ko": "소프로니 부인의 외양 묘사를 통해 그녀의 냉정한 성격을 드러냄"
+            }
+          ],
+          "culturalReferences": [],
+          "key_vocabulary": [
+            {
+              "en": "collected herself",
+              "pronunciation": "컬렉티드 허셀프",
+              "part_of_speech": "idiom",
+              "ko_gloss": "마음을 가다듬다",
+              "context_note_ko": "흥분이나 숨 가쁨을 진정시키려는 행동"
+            },
+            {
+              "en": "chilly",
+              "pronunciation": "칠리",
+              "part_of_speech": "adj.",
+              "ko_gloss": "냉담한, 쌀쌀맞은",
+              "context_note_ko": "사람의 성격이 차갑고 정이 없음을 의미"
+            }
+          ],
+          "notable_quote": null,
+          "dialogueSpeaker": "Della",
+          "ambiguity_level": "low",
+          "translation_difficulty": "low",
+          "flag_for_revision": false,
+          "flag_reason": ""
+        }
+      },
+      {
+        "blockId": "block_014",
+        "originalText": "“I buy hair,” said Madame. “Take yer hat off and let’s have a sight at\nthe looks of it.”",
+        "literary_translation": "\"제 머리카락을 사시겠어요?\" 델라가 물었다.",
+        "literal_translation": "\"당신은 내 머리카락을 사겠습니까?\" 델라가 물었다.",
+        "korean_commentary": "델라가 자신의 소중한 머리카락을 팔겠다는 결론적인 질문을 던지는 장면입니다.",
+        "annotations": {
+          "containsForeshadowing": false,
+          "foreshadowingSetupRef": null,
+          "containsCallback": false,
+          "callbackRef": null,
+          "toneShift": "tense",
+          "sceneTransition": false,
+          "symbolismPresent": [],
+          "literaryDevices": [],
+          "culturalReferences": [],
+          "key_vocabulary": [],
+          "notable_quote": null,
+          "dialogueSpeaker": "Della",
+          "ambiguity_level": "low",
+          "translation_difficulty": "low",
+          "flag_for_revision": false,
+          "flag_reason": ""
+        }
+      },
+      {
+        "blockId": "block_015",
+        "originalText": "Down rippled the brown cascade. “Twenty dollars,” said Madame, lifting\nthe mass with a practised hand.\n\n“Give it to me quick,” said Della.",
+        "literary_translation": "\"머리카락은 삽니다.\" 부인이 말했다. \"모자를 벗어보게. 상태가 어떤지 좀 보게나.\"\n\n갈색 폭포가 아래로 흘러내렸다. \"20달러라네.\" 부인이 숙련된 손길로 머리카락 뭉치를 들어 올리며 말했다.\n\n\"어서 주세요, 빨리요.\" 델라가 말했다.",
+        "literal_translation": "\"나는 머리카락을 삽니다,\" 부인이 말했다. \"자네 모자를 벗고 그것의 외양을 좀 봅시다.\"\n\n갈색 폭포가 아래로 물결치며 내려왔다. \"20달러,\" 부인이 숙련된 손으로 그 덩어리를 들어 올리며 말했다.\n\n\"나에게 빨리 주세요,\" 델라가 말했다.",
+        "korean_commentary": "거래가 성사되는 과정입니다. 델라의 조급함과 부인의 사무적인 태도가 대비되며, 머리카락이 돈(20달러)으로 환산되는 비극적 순간을 보여줍니다.",
+        "annotations": {
+          "containsForeshadowing": false,
+          "foreshadowingSetupRef": null,
+          "containsCallback": false,
+          "callbackRef": null,
+          "toneShift": "transactional",
+          "sceneTransition": false,
+          "symbolismPresent": [
+            "20 dollars"
+          ],
+          "literaryDevices": [
+            {
+              "device": "metaphor",
+              "description_ko": "머리카락을 다시 한번 '갈색 폭포'로 묘사하여 시각적 이미지를 강조함"
+            }
+          ],
+          "culturalReferences": [],
+          "key_vocabulary": [
+            {
+              "en": "practised hand",
+              "pronunciation": "프랙티스드 핸드",
+              "part_of_speech": "adj. + n.",
+              "ko_gloss": "숙련된 손길",
+              "context_note_ko": "이 일이 부인에게는 일상적이고 비즈니스적인 일임을 나타냄"
+            }
+          ],
+          "notable_quote": null,
+          "dialogueSpeaker": "Madame Sofronie, Della",
+          "ambiguity_level": "low",
+          "translation_difficulty": "low",
+          "flag_for_revision": false,
+          "flag_reason": ""
+        }
+      },
+      {
+        "blockId": "block_016",
+        "originalText": "Oh, and the next two hours tripped by on rosy wings. Forget the hashed\nmetaphor. She was ransacking the stores for Jim’s present.",
+        "literary_translation": "아, 그리고 이어지는 두 시간은 마치 장밋빛 날개를 달고 날아간 듯 순식간에 지나갔습니다. 아, 이런, 비유가 너무 과했군요. 그녀는 오로지 짐을 위한 선물을 찾기 위해 상점들을 샅샅이 뒤지고 있었습니다.",
+        "literal_translation": "오, 그리고 다음 두 시간은 장밋빛 날개 위에서 발걸음을 옮기듯 지나갔다. 엉터리 비유는 잊어버리자. 그녀는 짐의 선물을 찾기 위해 상점들을 뒤지고 있었다.",
+        "korean_commentary": "",
+        "annotations": {
+          "containsForeshadowing": false,
+          "foreshadowingSetupRef": null,
+          "containsCallback": false,
+          "callbackRef": null,
+          "toneShift": "The narrator breaks the fourth wall to acknowledge a clumsy metaphor.",
+          "sceneTransition": true,
+          "symbolismPresent": [],
+          "literaryDevices": [
+            {
+              "device": "metaphor",
+              "description_ko": "시간이 '장밋빛 날개'를 타고 지나갔다고 표현하여 델라의 들뜬 기분을 묘사함."
+            },
+            {
+              "device": "metafiction",
+              "description_ko": "작가가 'Forget the hashed metaphor'라고 말하며 자신의 문체를 스스로 수정하는 메타적 기법을 사용함."
+            }
+          ],
+          "culturalReferences": [],
+          "key_vocabulary": [
+            {
+              "en": "tripped by",
+              "pronunciation": "트립트 바이",
+              "part_of_speech": "v. phrase",
+              "ko_gloss": "경쾌하게 지나가다",
+              "context_note_ko": "시간이 매우 즐겁고 빠르게 흘러갔음을 의미함."
+            },
+            {
+              "en": "hashed metaphor",
+              "pronunciation": "해시드 메타포",
+              "part_of_speech": "n. phrase",
+              "ko_gloss": "엉터리/조잡한 비유",
+              "context_note_ko": "앞서 사용한 'rosy wings'라는 비유가 너무 상투적이거나 어설프다는 자조적 표현."
+            },
+            {
+              "en": "ransacking",
+              "pronunciation": "랜색킹",
+              "part_of_speech": "v.",
+              "ko_gloss": "샅샅이 뒤지다",
+              "context_note_ko": "선물을 찾기 위한 델라의 절박하고 열정적인 상태를 나타냄."
+            }
+          ],
+          "notable_quote": null,
+          "dialogueSpeaker": null,
+          "ambiguity_level": "low",
+          "translation_difficulty": "low",
+          "flag_for_revision": false,
+          "flag_reason": ""
+        },
+        "korean_comment략": "머리카락을 판 직후, 델라가 설레는 마음으로 선물을 찾기 위해 상점들을 돌아다니는 시간의 흐름을 묘사합니다. 작가가 갑자기 자신의 비유를 스스로 부정하며 독자에게 말을 거는 유머러스한 기법이 사용되었습니다."
+      },
+      {
+        "blockId": "block_017",
+        "originalText": "She found it at last. It surely had been made for Jim and no one else.\nThere was no other like it in any of the stores, and she had turned all\nof them inside out. It was a platinum fob chain simple and chaste in\ndesign, properly proclaiming its value by substance alone and not by\nmeretricious ornamentation—as all good things should do. It was even\nworthy of The Watch. As soon as she saw it she knew that it must be\nJim’s. It was like him. Quietness and value—the description applied to\nboth. Twenty-one dollars they took from her for it, and she hurried\nhome with the 87 cents. With that chain on his watch Jim might be\nproperly anxious about the time in any company. Grand as the watch was,\nhe sometimes looked at it on the sly on account of the old leather\nstrap that he used in place of a chain.",
+        "literary_translation": "마침내 그녀는 그것을 찾아냈습니다. 그것은 분명 짐, 오직 그만을 위해 만들어진 것이 분명했습니다. 그녀가 모든 상점을 샅샅이 뒤졌음에도 그와 닮은 것은 어디에도 없었습니다. 그것은 단순하면서도 정갈한 디자인의 플래티넘 시계 줄이었습니다. 화려하고 천박한 장식 대신 오직 소재 자체의 가치만으로 그 품격을 드러내는, 진정 좋은 물건이라면 마땅히 그래야 할 모습 그대로였습니다. 그것은 짐의 시계에 걸맞은 가치를 지니고 있었습니다. 보자마자 그녀는 이것이 짐의 것이 되어야 한다는 것을 직감했습니다. 마치 짐 자신처럼 말입니다. 정숙함과 가치, 이 두 단어는 두 존재 모두에게 딱 들어맞는 설명이었습니다. 그녀는 21달러를 지불하고 남은 87센트를 챙겨 서둘러 집으로 향했습니다. 이제 이 시계 줄이 짐의 시계에 채워진다면, 그는 어떤 자리에서도 당당하게 시간을 확인할 수 있을 것입니다. 시계 자체는 훌륭했지만, 짐은 기존의 낡은 가죽 끈 때문에 가끔 눈치를 보며 몰래 시계를 확인하곤 했으니까요.",
+        "literal_translation": "그녀는 마침내 그것을 발견했다. 그것은 분명 짐과 다른 누구를 위해서도 만들어진 것이 아니었다. 그녀가 모든 상점들을 뒤집어 보았음에도 그것과 같은 것은 다른 어떤 상점에도 없었다. 그것은 디자인이 단순하고 정갈한 플래티넘 포브 체인이었다. 모든 좋은 것들이 그래야 하듯, 천박한 장식이 아닌 오직 실질적인 소재만으로 그 가치를 적절히 선포하고 있었다. 그것은 심지어 '그 시계'에 걸맞을 정도였다. 그녀는 그것을 보자마자 그것이 짐의 것이어야만 한다는 것을 알았다. 그것은 그와 같았다. 정숙함과 가치—그 묘사는 둘 모두에게 적용되었다. 그들은 그것의 대가로 그녀에게서 21달러를 가져갔고, 그녀는 87센트를 가지고 서둘러 집으로 갔다. 그의 시계에 이 체인이 있다면, 짐은 어떤 무리 속에서도 제대로 시간을 확인하는 것을 염려하지 않아도 될 것이다. 시계가 아무리 훌륭해도, 그는 체인 대신 사용하던 오래된 가죽 스트랩 때문에 때때로 몰래 시계를 보곤 했다.",
+        "korean_commentary": "델라가 짐의 시계에 어울리는 완벽한 플래티넘 시계 줄을 찾아내는 장면입니다. 이 물건의 특징(단순함, 가치)을 짐의 성격과 연결하여 상징성을 부여합니다. 또한 짐이 기존에 사용하던 낡은 가죽 끈을 언급하며 시계 줄의 필요성을 강조합니다.",
+        "annotations": {
+          "containsForeshadowing": false,
+          "foreshadowingSetupRef": null,
+          "containsCallback": false,
+          "callbackRef": null,
+          "toneShift": "Shift from excitement to a descriptive, reverent tone regarding the object.",
+          "sceneTransition": false,
+          "symbolismPresent": [
+            "platinum fob chain"
+          ],
+          "literaryDevices": [
+            {
+              "device": "simile",
+              "description_ko": "시계 줄의 특성(Quietness and value)을 짐의 성격과 동일시함."
+            },
+            {
+              "device": "symbolism",
+              "description_ko": "플래티넘 체인의 '단순하고 정갈한' 디자인을 짐의 내면적 가치와 연결함."
+            }
+          ],
+          "culturalReferences": [
+            {
+              "term": "fob chain",
+              "explanation_ko": "회중시계를 조끼나 벨트에 고정하기 위해 사용하는 짧은 체인."
+            }
+          ],
+          "key_vocabulary": [
+            {
+              "en": "chaste",
+              "pronunciation": "체이스트",
+              "part_of_speech": "adj.",
+              "ko_gloss": "정갈한, 순결한",
+              "context_note_ko": "장식이 과하지 않고 깔끔한 디자인을 의미함."
+            },
+            {
+              "en": "meretricious",
+              "pronunciation": "메리트리셔스",
+              "part_of_speech": "adj.",
+              "ko_gloss": "겉만 번지르르한, 천박한",
+              "context_note_ko": "가치 없는 화려함을 비판하는 단어."
+            },
+            {
+              "en": "ornamentation",
+              "pronunciation": "오너멘테이션",
+              "part_of_speech": "",
+              "ko_gloss": "장식",
+              "context_note_ko": "물질적인 화려함을 나타냄.",
+              "part/of_speech": "n."
+            }
+          ],
+          "notable_quote": "It was like him. Quietness and value—the description applied to both.",
+          "dialogueSpeaker": null,
+          "ambiguity_level": "low",
+          "translation_difficulty": "medium",
+          "flag_for_revision": false,
+          "flag_reason": "",
+          "foey_shadowingSetupRef": null
+        }
+      },
+      {
+        "blockId": "block_019",
+        "originalText": "Within forty minutes her head was covered with tiny, close-lying curls\nthat made her look wonderfully like a truant schoolboy. She looked at\nher reflection in the mirror long, carefully, and critically.",
+        "literary_translation": "40분도 채 지나지 않아, 그녀의 머리는 아주 작고 촘촘한 곱슬머리로 덮였고, 그 모습은 마치 학교를 빼먹은 어린 소년처럼 보였습니다. 그녀는 거울 속에 비친 자신의 모습을 아주 오랫동안, 세심하고도 비판적인 눈길로 살폈습니다.",
+        "literal_translation": "40분 이내에 그녀의 머리는 작고 밀착된 컬들로 덮였고, 그것은 그녀를 놀랍게도 무단결석한 남학생처럼 보이게 만들었다. 그녀는 거울 속의 자신의 반영을 길게, 주의 깊게, 그리고 비판적으로 바라보았다.",
+        "korean_commentary": "",
+        "annotations": {
+          "containsForeshadowing": false,
+          "foreshadowingSetupRef": null,
+          "containsCallback": false,
+          "callbackRef": null,
+          "toneShift": "Shift to a more self-conscious and anxious tone.",
+          "sceneTransition": false,
+          "symbolismPresent": [],
+          "literaryDevices": [
+            {
+              "device": "simile",
+              "description_ko": "짧아진 머리 모양을 '학교를 빼먹은 소년'에 비유하여 델라의 불안감을 유머러스하게 표현함."
+            }
+          ],
+          "culturalReferences": [],
+          "key_vocabulary": [
+            {
+              "en": "truant schoolboy",
+              "pronunciation": "트루언트 스쿨보이",
+              "part_of_speech": "n. phrase",
+              "ko_gloss": "무단결석 중인 학생",
+              "context_note_ko": "머리 모양이 낯설고 소년처럼 보임을 나타냄."
+            },
+            {
+              "en": "critically",
+              "pronunciation": "크리티컬리",
+              "part_of_speech": "adv.",
+              "ko_gloss": "비판적으로, 꼼꼼하게",
+              "context_note_ko": "자신의 변한 모습이 남편에게 어떻게 보일지 걱정하며 살피는 태도."
+            }
+          ],
+          "notable_quote": null,
+          "dialogueSpeaker": null,
+          "ambiguity_level": "low",
+          "translation_difficulty": "low",
+          "flag_for_revision": false,
+          "flag_reason": "",
+          "foey_shadowingSetupRef": null
+        }
+      },
+      {
+        "blockId": "block_021",
+        "originalText": "At 7 o’clock the coffee was made and the frying-pan was on the back of\nthe stove hot and ready to cook the chops.",
+        "literary_translation": "7시가 되자 커피가 다 내려졌고, 프라이팬은 달궈진 채로 냄비 뒤편에서 큼직한 고기 조각을 구울 준비를 마치고 있었습니다.",
+        "literal_translation": "7시에 커피가 만들어졌고, 프라이팬은 스토브 뒤편에서 뜨겁게 달궈져 찹(고기)을 요리할 준비가 되어 있었습니다.",
+        "korean_commentary": "저녁 식사 준비가 완료된 평온한 가정의 풍경을 묘사합니다. 델라가 남편을 기다리며 정성스럽게 저녁을 준비하고 있음을 보여줍니다.",
+        "annotations": {
+          "containsForeshadowing": false,
+          "foreshadowingSetupRef": null,
+          "containsCallback": false,
+          "callbackRef": null,
+          "toneShift": "calm",
+          "sceneTransition": false,
+          "symbolismPresent": [],
+          "literaryDevices": [],
+          "culturalReferences": [],
+          "key_vocabulary": [
+            {
+              "en": "chops",
+              "pronunciation": "촙스",
+              "part_of_speech": "n.",
+              "ko_gloss": "고기 조각(갈비 등)",
+              "context_note_ko": "뼈가 붙은 고기 부위를 의미하며, 소박하지만 든든한 저녁 식사를 암시합니다."
+            }
+          ],
+          "notable_quote": null,
+          "dialogueSpeaker": null,
+          "ambiguity_level": "low",
+          "translation_difficulty": "low",
+          "flag_for_revision": false,
+          "flag_reason": "",
+          "dialogtalSpeaker": null
+        }
+      },
+      {
+        "blockId": "block_022",
+        "originalText": "Jim was never late. Della doubled the fob chain in her hand and sat on\nthe corner of the table near the door that he always entered. Then she\nheard his step on the stair away down on the first flight, and she\nturned white for just a moment. She had a habit for saying little\nsilent prayers about the simplest everyday things, and now she\nwhispered: “Please God, make him think I am still pretty.”",
+        "literary_translation": "짐은 결코 늦는 법이 없었습니다. 델라는 손에 쥔 시계 줄을 만지작거리며, 그가 늘 들어오던 문 근처 식탁 모서리에 앉았습니다. 이윽고 아래층 계단에서 그의 발소리가 들려오자, 그녀는 순간 얼굴이 하얗게 질렸습니다. 그녀는 아주 사소한 일상조차도 조용히 기도하는 습관이 있었는데, 지금 그녀는 나직이 읊조렸습니다. '하나님, 제발 그가 제가 여전히 예쁘다고 생각하게 해주세요.'",
+        "literal_translation": "짐은 결코 늦지 않았습니다. 델라는 손에 시계 줄을 두 번 감아 쥐고 그가 항상 들어오는 문 근처 테이블 모서리에 앉았습니다. 그러다 그녀는 아래쪽 첫 번째 계단에서 그의 발소리를 들었고, 그녀는 잠시 하얗게 변했습니다. 그녀는 아주 단순한 일상적인 일들에 대해 작고 침묵하는 기도를 드리는 습기 있었고, 이제 그녀는 속삭였습니다: '제발 하나님, 그가 내가 여전히 예쁘다고 생각하게 해주세요.'",
+        "korean_commentary": "남편을 기다리는 델라의 불안함과 긴장감이 드러납니다. 머리카락을 판 후 변화된 자신의 모습이 남편에게 어떻게 비춰질지 두려워하며 기도하는 장면입니다.",
+        "annotations": {
+          "containsForeshadowing": false,
+          "foreshadowingSetupRef": null,
+          "containsCallback": false,
+          "callbackRef": null,
+          "toneShift": "anxious",
+          "sceneTransition": false,
+          "symbolismPresent": [
+            "Della's prayer"
+          ],
+          "literaryDevices": [
+            {
+              "device": "symbolism",
+              "description_ko": "델라의 기도는 외적인 변화(머리카락)에도 불구하고 변치 않는 남편의 사랑을 갈구하는 심리를 상징합니다."
+            }
+          ],
+          "culturalReferences": [],
+          "key_vocabulary": [
+            {
+              "en": "turned white",
+              "pronunciation": "턴드 화이트",
+              "part_of_speech": "idiom",
+              "ko_gloss": "창백해지다",
+              "context_note_ko": "두려움이나 긴장으로 인해 안색이 변했음을 나타냅니다."
+            }
+          ],
+          "notable_quote": "Please God, make him think I am still pretty.",
+          "dialogueSpeaker": "Della",
+          "ambiguity_level": "low",
+          "translation_difficulty": "low",
+          "flag_for_revision": false,
+          "flag_reason": ""
+        }
+      },
+      {
+        "blockId": "block_023",
+        "originalText": "The door opened and Jim stepped in and closed it. He looked thin and\nvery serious. Poor fellow, he was only twenty-two—and to be burdened\nwith a family! He needed a new overcoat and he was without gloves.",
+        "literary_translation": "문이 열리고 짐이 들어와 문을 닫았습니다. 그는 수척하고 매우 진지해 보였습니다. 가여운 사람, 그는 겨우 스물두 살이었고, 부양해야 할 가족이 있다는 짐을 짊어지고 있었습니다! 그는 새 외투도 필요했고 장갑도 없었습니다.",
+        "literal_translation": "문이 열렸고 짐이 들어와서 닫았습니다. 그는 야위었고 매우 진지해 보였습니다. 불쌍한 친구, 그는 단지 22살이었고—가족을 짊어지고 있었습니다! 그는 새 오버코트가 필요했고 그는 장갑이 없었습니다.",
+        "korean_commentary": "퇴근한 짐의 초라한 모습이 묘사됩니다. 경제적 어려움 속에서 가장으로서의 무게를 견디고 있는 그의 상황이 드러납니다.",
+        "annotations": {
+          "containsForeshadowing": false,
+          "foreshadowingSetupRef": null,
+          "containsCallback": false,
+          "callbackRef": null,
+          "toneShift": "pitying",
+          "sceneTransition": false,
+          "symbolismPresent": [],
+          "literaryDevices": [
+            {
+              "device": "irony",
+              "description_ko": "가족을 위해 헌신하는 짐의 상황과 그의 초라한 차림새가 대비되어 애잔함을 자아냅니다."
+            }
+          ],
+          "culturalReferences": [],
+          "key_vocabulary": [
+            {
+              "en": "burdened with a family",
+              "pronunciation": "버든드 위드 어 패밀리",
+              "part_of_speech": "idiom",
+              "ko_gloss": "가족을 부양하는 책임감을 지닌",
+              "context_note_ko": "가족이 경제적 부담이자 동시에 삶의 무게임을 나타냅니다."
+            }
+          ],
+          "notable_quote": null,
+          "dialogueSpeaker": null,
+          "ambiguity_level": "low",
+          "translation_difficulty": "low",
+          "flag_for_revision": false,
+          "flag_reason": ""
+        }
+      },
+      {
+        "blockId": "block_024",
+        "originalText": "Jim stopped inside the door, as immovable as a setter at the scent of\nquail. His eyes were fixed upon Della, and there was an expression in\nthem that she could not read, and it terrified her. It was not anger,\nnor surprise, nor disapproval, nor horror, nor any of the sentiments\nthat she had been prepared for. He simply stared at her fixedly with\nthat peculiar expression on his face.",
+        "literary_translation": "짐은 문 안쪽에서 마치 사냥개가 꿩의 냄새를 맡은 듯 굳어버린 듯 멈춰 섰습니다. 그의 시선은 델라에게 고정되었고, 그 눈빛에는 그녀가 읽어낼 수 없는 어떤 표정이 담겨 있어 그녀를 겁먹게 했습니다. 그것은 분노도, 놀람도, 실망도, 경악도, 혹은 그녀가 예상했던 그 어떤 감정도 아니었습니다. 그는 그저 기이한 표정을 지은 채 멍하니 그녀를 응시할 뿐이었습니다.",
+        "literal_translation": "",
+        "korean_commentary": "짐이 델라의 짧아진 머리를 보고 충격에 빠진 순간입니다. 짐의 알 수 없는 표정은 독자에게 긴장감을 유발하며, 델라가 느낀 공포를 극대화합니다.",
+        "annotations": {
+          "containsForeshadowing": false,
+          "foreshadowingSetupRef": null,
+          "containsCallback": false,
+          "callbackRef": null,
+          "toneShift": "tense",
+          "sceneTransition": false,
+          "symbolismPresent": [],
+          "literaryDevices": [
+            {
+              "device": "simile",
+              "description_ko": "짐의 멈춰 선 모습을 사냥개가 냄새를 맡고 멈춘 것에 비유하여, 충격으로 인한 마비 상태를 묘리합니다."
+            }
+          ],
+          "culturalReferences": [
+            {
+              "term": "setter at the scent of quail",
+              "explanation_ko": "사냥개(Setter)가 먹잇감의 냄새를 맡고 움직임을 멈추는 행동을 의미합니다."
+            }
+          ],
+          "key_vocabulary": [
+            {
+              "en": "immovable",
+              "pronunciation": "이무버블",
+              "part_of_speech": "adj.",
+              "ko_gloss": "움직일 수 없는",
+              "context_note_ko": "충격으로 인해 몸이 굳어버린 상태를 강조합니다."
+            }
+          ],
+          "notable_quote": null,
+          "dialogueSpeaker": null,
+          "ambiguity_level": "high",
+          "translation_difficulty": "medium",
+          "flag_for_revision": false,
+          "flag_reason": ""
+        },
+        "literal_string": "짐은 문 안에서, 메추라기 냄새를 맡은 세터(사냥개)처럼 움직일 수 없게 멈췄습니다. 그의 눈은 델라에게 고정되었고, 그녀가 읽을 수 없는 표정이 그 안에 있었으며, 그것은 그녀를 공포에 떨게 했습니다. 그것은 분노도, 놀람도, 불만도, 공포도, 혹은 그녀가 준비했던 어떤 감정도 아니었습니다. 그는 그저 그 특유의 표정으로 그녀를 빤히 바라보았습니다."
+      },
+      {
+        "blockId": "block_025",
+        "originalText": "Della wriggled off the table and went for him.",
+        "literary_translation": "델라는 테이블에서 내려와 그에게 다가갔습니다.",
+        "literal_translation": "델라는 테이블에서 몸을 비틀어 내려와 그를 향해 갔습니다.",
+        "korean_commentary": "긴장된 침묵을 깨고 델라가 남편에게 다가가는 동작을 나타냅니다. 상황의 전환점 역할을 합니다.",
+        "annotations": {
+          "containsForeshadowing": false,
+          "foreshadowingSetupRef": null,
+          "containsCallback": false,
+          "callbackRef": null,
+          "toneShift": "active",
+          "sceneTransition": true,
+          "symbolismPresent": [],
+          "literaryDevices": [],
+          "culturalReferences": [],
+          "key_vocabulary": [
+            {
+              "en": "wriggled off",
+              "pronunciation": "리글드 오프",
+              "part_of_speech": "v.",
+              "ko_gloss": "몸을 비틀어 내려오다",
+              "context_note_ko": "단순히 내려오는 것이 아니라, 긴장된 상태에서 움직이는 뉘앙스를 담고 있습니다."
+            }
+          ],
+          "notable_quote": null,
+          "dialogueSpeaker": null,
+          "ambiguity_level": "low",
+          "translation_difficulty": "low",
+          "flag_for_revision": false,
+          "flag_reason": "",
+          "containsFrashadowing": false
+        }
+      },
+      {
+        "blockId": "block_026",
+        "originalText": "“Jim, darling,” she cried, “don’t look at me that way. I had my hair\ncut off and sold because I couldn’t have lived through Christmas\nwithout giving you a present. It’ll grow out again—you won’t mind, will\nyou? I just had to do it. My hair grows awfully fast. Say ‘Merry\nChristmas!’ Jim, and let’s be happy. You don’t know what a nice—what a\nbeautiful, nice gift I’ve got for you.”",
+        "literary_translation": "\"짐, 여보,\" 그녀가 외쳤습니다. \"나를 그런 눈으로 보지 마세요. 당신에게 줄 선물을 준비하지 않고서는 도저히 크리스마스를 보낼 수 없어서 머리를 잘라 팔아버렸단 말이에요. 머리는 다시 자랄 거예요. 당신도 이해해 줄 거죠? 정말 어쩔 수 없었어요. 제 머리카락은 정말 빨리 자라거든요. 자, '메리 크리스마스'라고 말해줘요, 짐. 그리고 우리 행복해지자고요. 당신을 위해 얼마나 멋지고... 얼마나 아름답고 근사한 선물을 준비했는지 당신은 모를 거예요.\"",
+        "literal_translation": "\"짐, 내 사랑,\" 그녀가 외쳤습니다, \"나를 그런 방식으로 보지 마세요. 나는 내 머리카락을 잘라 팔았어요 왜냐하면 당신에게 선물을 주는 것 없이는 크리스마스를 견뎌낼 수 없었기 때문이에요. 그것은 다시 자라날 거예요—당신은 개의치 않겠죠, 그렇죠? 나는 그저 그렇게 해야만 했어요. 내 머리카락은 지독하게 빨리 자라요. '메리 크리스마스'라고 말해줘요, 짐. 그리고 행복해집시다. 당신은 내가 당신을 위해 얼마나 멋진—얼마나 아름답고 멋진 선물을 가졌는지 모를 거예요.\"",
+        "korean_commentary": "자신의 가장 소중한 상징인 머리카락을 포기한 이유가 오로지 남편을 위한 사랑 때문임을 호소하는 장면입니다. 델라는 불안감을 감추기 위해 밝고 활기찬 어조를 유지하려 애쓰며, 선물에 대한 기대감을 드러냅니다.",
+        "annotations": {
+          "containsForeshadowing": false,
+          "foreshadowingSetupRef": null,
+          "containsCallback": false,
+          "callbackRef": null,
+          "toneShift": "anxious to forcedly cheerful",
+          "sceneTransition": false,
+          "symbolismPresent": [
+            "Della's hair"
+          ],
+          "literaryDevices": [
+            {
+              "device": "hyperbole",
+              "description_ko": "머리카락이 '지독하게 빨리 자란다'며 자신의 행동을 정당화하려는 과장된 표현"
+            }
+          ],
+          "culturalReferences": [],
+          "key_vocabulary": [
+            {
+              "en": "couldn't have lived through",
+              "pronunciation": "쿠든트 해브 리브드 스루",
+              "part_of_speech": "idiom",
+              "ko_gloss": "견뎌낼 수 없었을 것이다",
+              "context_note_ko": "선물을 주지 못하는 고통을 극복할 수 없었음을 강조"
+            }
+          ],
+          "notable_quote": "I couldn't have lived through Christmas without giving you a present.",
+          "dialogueSpeaker": "Della",
+          "ambiguity_level": "low",
+          "translation_difficulty": "low",
+          "flag_for_revision": false,
+          "flag_reason": ""
+        }
+      },
+      {
+        "blockId": "block_027",
+        "originalText": "“You’ve cut off your hair?” asked Jim, laboriously, as if he had not\narrived at that patent fact yet even after the hardest mental labor.",
+        "literary_translation": "\"머리를 잘라버렸다고?\" 짐이 물었습니다. 마치 그 명백한 사실을 깨닫기 위해 엄청난 정신적 고통을 겪고 있는 듯, 그는 아주 어렵게 되물었습니다.",
+        "literal_translation": "\"당신이 당신의 머리카로 잘라버렸다고?\" 짐이 물었습니다, 마치 그 명백한 사실에 아직 도달하지 못한 것처럼, 가장 힘든 정신적 노동을 거친 후에도.",
+        "korean_commentary": "짐은 델라의 머리가 짧아진 충격적인 사실을 머릿속으로 받아들이지 못하고 있습니다. 그의 질문은 단순한 질문이 아니라, 눈앞의 현실과 인지 사이의 괴리를 보여줍니다.",
+        "annotations": {
+          "containsForeshadowing": false,
+          "foreshadowingSetupRef": null,
+          "containsCallback": false,
+          "callbackRef": null,
+          "toneShift": "stunned/disoriented",
+          "sceneTransition": false,
+          "symbolismPresent": [],
+          "literaryDevices": [
+            {
+              "device": "metaphor",
+              "description_ko": "사실을 이해하는 과정을 '정신적 노동(mental labor)'에 비유하여 짐의 혼란을 강조"
+            }
+          ],
+          "culturalReferences": [],
+          "key_vocabulary": [
+            {
+              "en": "laboriously",
+              "pronunciation": "레이버리어슬리",
+              "part_of_speech": "adv.",
+              "ko_gloss": "힘겹게, 어렵게",
+              "context_note_ko": "충격으로 인해 사고 과정이 매우 느리고 고통스러움을 나타냄"
+            },
+            {
+              "en": "patent fact",
+              "pronunciation": "페이턴트 팩트",
+              "part_of_speech": "n. phrase",
+              "ko_gloss": "명백한 사실",
+              "context_note_ko": "누가 봐도 분명한 사실을 의미"
+            }
+          ],
+          "notable_quote": null,
+          "dialogueSpeaker": "Jim",
+          "ambiguity_level": "low",
+          "translation_difficulty": "medium",
+          "flag_for_revision": false,
+          "flag_reason": ""
+        }
+      },
+      {
+        "blockId": "block_028",
+        "originalText": "“Cut it off and sold it,” said Della. “Don’t you like me just as well,\nanyhow? I’m me without my hair, ain’t I?”\n\nJim looked about the room curiously.",
+        "literary_translation": "\"잘라서 팔아버렸어요.\" 델라가 말했습니다. \"그래도 여전히 제가 좋으시죠? 머리카락이 없어도 저는 여전히 저잖아요, 안 그래요?\" 짐은 의아한 듯 방 안을 두리번거렸습니다.",
+        "literal_translation": "\"잘라서 팔았어요,\" 델라가 말했습니다. \"어쨌든 당신은 여전히 저를 좋아하지 않나요? 머리카락 없는 상태의 저도 저잖아요, 그렇지 않나요?\" 짐은 호기심 어린 눈으로 방 안을 둘러보았습니다.",
+        "korean_commentary": "델라는 자신의 외적 아름다움(머리카락)이 사라졌더라도 남편의 사랑은 변치 않기를 바라며 확인받으려 합니다. 짐의 반응은 여전히 현실을 파악하지 못한 채 멍한 상태입니다.",
+        "annotations": {
+          "containsForeshadowing": false,
+          "foreshadowingSetupRef": null,
+          "containsCallback": false,
+          "callbackRef": null,
+          "toneShift": "seeking reassurance",
+          "sceneTransition": false,
+          "symbolismPresent": [],
+          "literaryDevices": [
+            {
+              "device": "rhetorical question",
+              "description_ko": "자신의 가치가 외모에 있지 않음을 강조하며 남편의 사랑을 확인하려는 수사적 질문"
+            }
+          ],
+          "culturalReferences": [],
+          "key_vocabulary": [
+            {
+              "en": "anyhow",
+              "pronunciation": "애니하우",
+              "part_of_speech": "adv.",
+              "ko_gloss": "어쨌든, 그래도",
+              "context_note_ko": "상황이 변했음에도 불구하고라는 의미를 내포"
+            }
+          ],
+          "notable_quote": "I'm me without my hair, ain't I?",
+          "dialogueSpeaker": "Della",
+          "ambiguity_level": "low",
+          "translation_difficulty": "low",
+          "flag_for_revision": false,
+          "flag_reason": ""
+        }
+      },
+      {
+        "blockId": "block_029",
+        "originalText": "“You say your hair is gone?” he said, with an air almost of idiocy.",
+        "literary_translation": "\"머리카락이 사라졌다고?\" 그가 거의 멍청해 보일 정도로 멍한 표정으로 말했습니다.",
+        "literal_translation": "\"당신의 머리카락이 사라졌다고 말하는 건가요?\" 그가 거의 백치 같은 분위기로 말했습니다.",
+        "korean_commentary": "",
+        "annotations": {
+          "containsForeshadowing": false,
+          "foreshadowingSetupRef": null,
+          "containsCallback": false,
+          "callbackRef": null,
+          "toneShift": "vacant/stupefied",
+          "sceneTransition": false,
+          "symbolismPresent": [],
+          "literaryDevices": [
+            {
+              "device": "simile",
+              "description_ko": "짐의 상태를 '백치(idiocy)'에 비유하여 극도의 충격을 표현"
+            }
+          ],
+          "culturalReferences": [],
+          "key_vocabulary": [
+            {
+              "en": "with an air almost of idiocy",
+              "pronunciation": "위드 언 에어 얼모스트 오브 이디오시",
+              "part_of_speech": "idiom",
+              "ko_gloss": "거의 바보 같은 분위기로",
+              "context_note_ko": "정신이 나간 듯한 멍한 상태를 묘사"
+            }
+          ],
+          "notable_quote": null,
+          "dialogueSpeaker": "Jim",
+          "ambiguity_level": "low",
+          "translation_difficulty": "low",
+          "flag_for_revision": false,
+          "flag_reason": ""
+        },
+        "korean_commentrypt": "짐의 충격이 극에 달해, 이성적인 사고가 마비된 상태를 묘사합니다. 그는 델라의 말을 믿지 못하거나, 믿고 싶지 않은 상태입니다."
+      },
+      {
+        "blockId": "block_030",
+        "originalText": "“You needn’t look for it,” said Della. “It’s sold, I tell you—sold and\ngone, too. It’s Christmas Eve, boy. Be good to me, for it went for you.\nMaybe the hairs of my head were numbered,” she went on with sudden\nserious sweetness, “but nobody could ever count my love for you. Shall\nI put the chops on, Jim?”",
+        "literary_translation": "\"찾으려 하지 마세요.\" 델라가 말했습니다. \"말했잖아요, 팔아버렸다고요. 사라져 버렸어요. 여보, 오늘은 크리스마스 이브예요. 나에게 잘해줘요, 당신을 위해 팔았으니까요. 내 머리카락 개수는 정해져 있었을지 몰라도,\" 그녀는 갑자기 진지하고도 달콤한 어조로 말을 이었습니다, \"당신을 향한 내 사랑의 크기는 그 누구도 셀 수 없을 거예요. 짐, 이제 고기 요리를 올릴까요?\"",
+        "literal_translation": "\"찾을 필요 없어요,\" 델라가 말했습니다. \"팔았다고 말했잖아요—팔렸고, 사라졌어요. 여보, 오늘은 크리스마스 이브예요. 나에게 잘해줘요, 왜냐하면 그것은 당신을 위해 갔으니까요. 아마 내 머리의 머리카락들은 숫자가 매겨져 있었을지도 모르지만,\" 그녀는 갑작스럽고 진지한 달콤함과 함께 말을 이어갔습니다, \"하지만 아무도 당신을 향한 내 사랑을 결코 셀 수는 없을 거예요. 짐, 고기를 불에 올릴까요?\"",
+        "korean_commentary": "델라는 머리카락의 상실을 슬퍼하기보다, 그 희생이 남편을 향한 사랑에서 비롯되었음을 낭만적이고 숭고하게 표현합니다. 성경적 은유를 사용하여 자신의 사랑이 영원하고 무한함을 강조하며 분위기를 전환하려 합니다.",
+        "annotations": {
+          "containsForeshadowing": false,
+          "foreshadowingSetupRef": null,
+          "containsCallback": false,
+          "callbackRef": null,
+          "toneShift": "serious sweetness",
+          "sceneTransition": false,
+          "symbolismPresent": [
+            "numbered hairs"
+          ],
+          "literaryDevices": [
+            {
+              "device": "allusion",
+              "description_ko": "머리카락의 수가 정해져 있다는 표현을 통해 성경적 은유(하나님이 머리카락까지 다 세신다는 구절)를 차용하여 사랑의 무한함을 강조"
+            },
+            {
+              "device": "contrast",
+              "description_ko": "셀 수 있는 머리카락과 셀 수 없는 사랑을 대비시킴"
+            }
+          ],
+          "culturalReferences": [
+            {
+              "term": "hairs of my head were numbered",
+              "explanation_ko": "성경 마태복음 10:30의 '너희에게는 머리카락까지 다 세신 바 되었나니'를 연상시키는 표현"
+            }
+          ],
+          "key_vocabulary": [
+            {
+              "en": "be good to me",
+              "pronunciation": "비 구드 투 미",
+              "part_of_speech": "idiom",
+              "ko_gloss": "나에게 잘해줘요",
+              "context_note_ko": "희생을 알아달라는 애틋한 부탁"
+            }
+          ],
+          "notable_quote": "Nobody could ever count my love for you.",
+          "dialogueSpeaker": null,
+          "ambiguity_level": "low",
+          "translation_difficulty": "medium",
+          "flag_for_revision": false,
+          "flag_reason": "",
+          "dialogeySpeaker": "Della"
+        }
+      },
+      {
+        "blockId": "block_031",
+        "originalText": "Out of his trance Jim seemed quickly to wake. He enfolded his Della.\nFor ten seconds let us regard with discreet scrutiny some\ninconsequential object in the other direction. Eight dollars a week or\na million a year—what is the difference? A mathematician or a wit would\ngive you the wrong answer. The magi brought valuable gifts, but that\nwas not among them. This dark assertion will be illuminated later on.",
+        "literary_translation": "짐은 마치 최면에 걸린 듯한 상태에서 서서히 깨어난 듯 보였습니다. 그리고는 델라를 품에 꼭 안았습니다. 잠시 동안, 우리도 다른 곳에 있는 사소한 물건에 주의를 돌려 조심스럽게 살펴보도록 합시다. 일주일에 8달러를 버는 것이나 일 년에 백만 달러를 버는 것이나, 그게 무슨 차이가 있겠습니까? 수학자나 재치 있는 사람이라도 잘못된 답을 내놓을 것입니다. 동방박사들은 값진 선물을 가져왔지만, 이번 선물은 그중 하나가 아니었습니다. 이 어두운 선언은 나중에 밝혀질 것입니다.",
+        "literal_translation": "그의 황홀경으로부터 짐은 빠르게 깨어난 것처럼 보였습니다. 그는 그의 델라를 감싸 안았습니다. 10초 동안 우리가 다른 방향에 있는 사소한 물건을 신중한 정밀함으로 바라보게 합시다. 일주일에 8달러 혹은 일 년에 백만 달러—그 차이가 무엇입니까? 수학자나 재치 있는 사람이 당신에게 잘못된 답을 줄 것입니다. 동방박사들은 가치 있는 선물들을 가져왔지만, 그것은 그들 중 하나가 아니었습니다. 이 어두운 단언은 나중에 조명될 것입니다.",
+        "korean_commentary": "짐이 충격에서 벗어나 델라를 안아주며 장면이 전환됩니다. 작가는 화자를 개입시켜 경제적 가치와 정신적 가치의 차이를 논하며, 앞으로 일어날 아이러니를 암시합니다.",
+        "annotations": {
+          "containsForeshadowing": true,
+          "foreshadowingSetupRef": "The magi brought valuable gifts, but that was not among them.",
+          "containsCallback": false,
+          "callbackRef": null,
+          "toneShift": "from shock to philosophical reflection",
+          "sceneTransition": true,
+          "symbolismPresent": [
+            "The magi's gifts"
+          ],
+          "literaryDevices": [
+            {
+              "device": "foreshadowing",
+              "description_ko": "동방박사의 선물 중 이번 선물은 가치 있는 것이 아니라고 언급하며, 뒤에 올 비극적 아이러니를 암시함"
+            },
+            {
+              "device": "rhetorical question",
+              "description_ko": "소득의 차이가 중요하지 않음을 강조하기 위해 수사 의문문을 사용함"
+            }
+          ],
+          "culturalReferences": [
+            {
+              "term": "The magi",
+              "explanation_ko": "예수 탄생 시 선물을 가져온 동방박사들로, 지혜로운 자들의 원형"
+            }
+          ],
+          "key_vocabulary": [
+            {
+              "en": "trance",
+              "pronunciation": "트랜스",
+              "part_of_speech": "",
+              "ko_gloss": "황홀경, 최면 상태",
+              "context_note_ko": "짐이 델라의 고백을 듣고 멍해진 상태를 의미",
+              "part_            of_speech": "n."
+            },
+            {
+              "en": "inconsequential",
+              "pronunciation": "인컨시퀀셜",
+              "part_of_speech": "adj.",
+              "ko_gloss": "사소한, 중요하지 않은",
+              "context_note_ko": "돈의 액수나 물질적 가치를 지칭"
+            }
+          ],
+          "notable_quote": "A mathematician or a wit would give you the wrong answer.",
+          "dialogueSpeaker": null,
+          "ambiguity_level": "low",
+          "translation_difficulty": "medium",
+          "flag_for_revision": false,
+          "flag_reason": "",
+          "flag_for_revison": false
+        }
+      },
+      {
+        "blockId": "block_032",
+        "originalText": "Jim drew a package from his overcoat pocket and threw it upon the\ntable.",
+        "literary_translation": "짐은 외투 주머니에서 꾸러미 하나를 꺼내 탁자 위에 올려놓았습니다.",
+        "literal_translation": "짐은 그의 외투 주머니로부터 하나의 꾸러미를 꺼내어 탁자 위로 던졌습니다.",
+        "korean_commentary": "짐이 준비해온 선물을 공개하기 직전의 행동을 묘사합니다.",
+        "annotations": {
+          "containsForeshadowing": false,
+          "foreshadowingSetupRef": null,
+          "containsCallback": false,
+          "callbackRef": null,
+          "toneShift": null,
+          "sceneTransition": false,
+          "symbolismPresent": [],
+          "literaryDevices": [],
+          "culturalReferences": [],
+          "key_vocabulary": [
+            {
+              "en": "package",
+              "pronunciation": "패키지",
+              "part_of_speech": "n.",
+              "ko_gloss": "꾸러미, 선물",
+              "context_note_ko": "짐이 가져온 선물"
+            }
+          ],
+          "notable_quote": null,
+          "dialogueSpeaker": null,
+          "ambiguity_level": "low",
+          "translation_difficulty": "low",
+          "flag_for_revision": false,
+          "flag_reason": "",
+          "flag_for_revison": false
+        }
+      },
+      {
+        "blockId": "block_033",
+        "originalText": "“Don’t make any mistake, Dell,” he said, “about me. I don’t think\nthere’s anything in the way of a haircut or a shave or a shampoo that\ncould make me like my girl any less. But if you’ll unwrap that package\nyou may see why you had me going a while at first.”",
+        "literary_translation": "\"델라, 나에 대해서 오해하지 말아요.\" 그가 말했습니다. \"머리를 자르든, 면도를 하든, 샴푸를 하든, 그 어떤 것도 내 사랑하는 아가씨를 향한 내 마음을 줄일 수는 없어요. 하지만 그 꾸러미를 풀어보면, 왜 내가 처음에 그렇게 멍하니 있었는지 알게 될 거예요.\"",
+        "literal_translation": "\"나에 대해서 어떤 실수도 하지 마세요, 델,\" 그가 말했습니다. \"이발이나 면도나 샴푸 같은 어떤 것도 내 소녀를 덜 좋아하게 만들 수 있다고는 생각하지 않아요. 하지만 만약 당신이 그 꾸러미를 풀어본다면, 왜 처음에 당신이 나를 잠시 동안 멍하게 만들었는지 알게 될 것입니다.\"",
+        "korean_commentary": "짐은 델라의 외모 변화(머리카락을 판 것)가 자신의 사랑에 영향을 주지 않는다는 것을 확인시켜 주며, 동시에 선물에 얽힌 반전의 실마리를 제공합니다.",
+        "annotations": {
+          "containsForeshadowing": true,
+          "foreshadowingSetupRef": "why you had me going a while at first",
+          "containsCallback": false,
+          "callbackRef": null,
+          "toneShift": "reassuring",
+          "sceneTransition": false,
+          "symbolismPresent": [],
+          "literaryDevices": [
+            {
+              "device": "irony",
+              "description_ko": "머리카락이 변해도 사랑은 변치 않는다고 말하지만, 정작 선물은 그 머리카락을 위한 것이었음"
+            }
+          ],
+          "culturalReferences": [],
+          "key_vocabulary": [
+            {
+              "en": "unwrap",
+              "pronunciation": "언랩",
+              "part_of_speech": "v.",
+              "ko_gloss": "포장을 풀다",
+              "context_note_ko": "선물을 확인하는 행위"
+            }
+          ],
+          "notable_quote": "I don't think there's anything... that could make me like my girl any less.",
+          "dialogueSpeaker": "Jim",
+          "ambiguity_level": "low",
+          "translation_difficulty": "low",
+          "flag_for_revision": false,
+          "flag_reason": "",
+          "flag_for_revison": false
+        }
+      },
+      {
+        "blockId": "block_034",
+        "originalText": "White fingers and nimble tore at the string and paper. And then an\necstatic scream of joy; and then, alas! a quick feminine change to\nhysterical tears and wails, necessitating the immediate employment of\nall the comforting powers of the lord of the flat.",
+        "literary_translation": "하얗고 민첩한 손가락이 끈과 종이를 거칠게 뜯어냈습니다. 그러자 환희에 찬 비명이 터져 나왔고, 이내 아아! 여인 특유의 히스테릭한 눈물과 통곡으로 바뀌어, 집주인인 짐이 서둘러 모든 위로의 힘을 다해 달래야만 했습니다.",
+        "literal_translation": "하얀 손가락들과 민첩한 손가락들이 끈과 종이를 찢었습니다. 그리고 나서, 기쁨의 황홀한 비명이; 그리고 그다음, 아아! 히스테릭한 눈물과 통곡으로의 빠른 여성적인 변화가; 즉각적으로 아파트의 주인의 모든 위로하는 능력을 필요로 하는.",
+        "korean_commentary": "선물을 확인한 델라의 감정이 극도의 기쁨에서 슬픔으로 급격히 변하는 모습을 묘사합니다. 이는 선물의 내용물이 델라의 현재 상태(짧아진 머리)와 맞지 않음을 깨달았기 때문입니다.",
+        "annotations": {
+          "containsForeshadowing": false,
+          "foreshadowingSetupRef": null,
+          "containsCallback": false,
+          "callbackRef": null,
+          "toneShift": "ecstatic to hysterical",
+          "sceneTransition": false,
+          "symbolismPresent": [],
+          "literaryDevices": [
+            {
+              "device": "hyperbole",
+              "description_ko": "델라의 감정 변화를 극적으로 묘사함"
+            }
+          ],
+          "culturalReferences": [],
+          "key_vocabulary": [
+            {
+              "en": "nimble",
+              "pronunciation": "님블",
+              "part_of_speech": "adj.",
+              "ko_gloss": "민첩한",
+              "context_note_ko": "선물을 뜯는 델라의 손동작"
+            },
+            {
+              "en": "ecstatic",
+              "pronunciation": "익스태틱",
+              "part_of_speech": "adj.",
+              "ko_gloss": "황홀해하는",
+              "context_note_ko": "선물을 본 직후의 감정"
+            }
+          ],
+          "notable_quote": null,
+          "dialogueSpeaker": null,
+          "ambiguity_level": "low",
+          "translation_difficulty": "medium",
+          "flag_for_revision": false,
+          "flag_reason": "",
+          "flag_for_revison": false
+        }
+      },
+      {
+        "blockId": "block_035",
+        "originalText": "For there lay The Combs—the set of combs, side and back, that Della had\nworshipped long in a Broadway window. Beautiful combs, pure tortoise\nshell, with jewelled rims—just the shade to wear in the beautiful\nvanished hair. They were expensive combs, she knew, and her heart had\nsimply craved and yearned over them without the least hope of\npossession. And now, they were hers, but the tresses that should have\nadorned the coveted adornments were gone.",
+        "literary_translation": "그곳에는 바로 그 머리빗이 놓여 있었습니다. 델라가 브로드웨이의 어느 창가에서 오랫동안 동경해 마지않았던, 옆머리와 뒷머리용 머리빗 세트였습니다. 보석이 박힌 테두리가 있는 순수한 거북 등껍질로 만든 아름다운 빗들이었습니다. 바로 그 아름답게 사라져 버린 머리카락에 어울리는 색감이었습니다. 그녀는 그것들이 값비싼 빗이라는 것을 알고 있었고, 소유할 수 있다는 희망조차 품지 못한 채 그저 간절히 갈망해 왔습니다. 이제 그것들은 그녀의 손에 들어왔지만, 그 탐스러운 장식품들을 빛내주어야 할 머리카락은 이미 사라지고 없었습니다.",
+        "literal_translation": "그곳에는 머리빗들이 놓여 있었습니다—델라가 브로드웨이 창가에서 오랫동안 숭배했던 옆과 뒤를 위한 빗 세트였습니다. 보석이 박힌 테두리를 가진 순수한 거북 등껍질로 된 아름다운 빗들이었습니다—그 아름답게 사라진 머리카락에 착용하기에 딱 맞는 색상이었습니다. 그녀는 그것들이 비싼 빗이라는 것을 알았고, 그녀의 마음은 소유할 수 있다는 최소한의 희망도 없이 그것들을 갈망하고 갈구해 왔습니다. 그리고 이제, 그것들은 그녀의 것이었지만, 그 갈망하던 장식품들을 장식해야 했을 머리카락은 사라졌습니다.",
+        "korean_commentary": "선물의 정체가 밝혀집니다. 델라가 그토록 원했던 머리빗은 그녀의 아름다운 머리카락을 위해 준비된 것이었으나, 정작 머리카락은 이미 팔아버린 상태라 선물은 무용지물이 됩니다. 이는 작품의 핵심적인 아이러니를 보여줍니다.",
+        "annotations": {
+          "containsForeshadowing": false,
+          "foreshadowingSetupRef": null,
+          "containsCallback": false,
+          "callbackRef": null,
+          "toneShift": "longing to tragic irony",
+          "sceneTransition": false,
+          "symbolismPresent": [
+            "The Combs"
+          ],
+          "literaryDevices": [
+            {
+              "device": "irony",
+              "description_ko": "가장 갖고 싶었던 물건을 얻었으나, 그것을 사용할 수 없는 상황이 완성됨"
+            }
+          ],
+          "culturalReferences": [
+            {
+              "term": "tortoise shell",
+              "explanation_ko": "거북 등껍질로 만든 고급 장식 재료"
+            }
+          ],
+          "key_vocabulary": [
+            {
+              "en": "worshipped",
+              "pronunciation": "워쉽트",
+              "part_of_speech": "v.",
+              "ko_gloss": "숭배하다, 열망하다",
+              "context_note_ko": "물건에 대한 강한 애착을 표현"
+            },
+            {
+              "en": "coveted",
+              "pronunciation": "커비티드",
+              "part_of_speech": "adj.",
+              "ko_gloss": "갈망하던, 탐내는",
+              "context_note_ko": "갖고 싶어 했던 머리빗을 수식"
+            }
+          ],
+          "notable_quote": "And now, they were hers, but the tresses that should have adorned the coveted adornments were gone.",
+          "dialogueSpeaker": null,
+          "ambiguity_level": "low",
+          "translation_difficulty": "medium",
+          "flag_for_revision": false,
+          "flag_reason": "",
+          "ambability_level": "low",
+          "flag_for_revison": false
+        }
+      },
+      {
+        "blockId": "block_036",
+        "originalText": "But she hugged them to her bosom, and at length she was able to look up\nwith dim eyes and a smile and say: “My hair grows so fast, Jim!”",
+        "literary_translation": "하지만 그녀는 그 빗들을 가슴에 꼭 끌어안았습니다. 그러고는 이윽고 흐릿해진 눈가에 미소를 머금은 채 고개를 들어 말했습니다. \"짐, 내 머리카락은 정말 빨리 자란다니까요!\"",
+        "literal_translation": "그러나 그녀는 그것들을 그녀의 가슴으로 끌어안았고, 마침내 그녀는 흐릿한 눈과 미소를 가지고 올려다보며 말할 수 있었습니다: \"내 머리카락은 아주 빨리 자라요, 짐!\"",
+        "korean_commentary": "선물을 받은 델라가 슬픔을 딛고 긍정적인 태도를 보이려 노력하는 장면입니다. 머리카락을 팔아버린 상실감을 '머리카락이 빨리 자랄 것'이라는 낙관적인 말로 덮으려 합니다.",
+        "annotations": {
+          "containsForeshadowing": false,
+          "foreshadowingSetupRef": null,
+          "containsCallback": false,
+          "callbackRef": null,
+          "toneShift": "sadness to optimism",
+          "sceneTransition": false,
+          "symbolismPresent": [
+            "Della's hair"
+          ],
+          "literaryDevices": [
+            {
+              "device": "irony",
+              "description_ko": "머리카락이 이미 짧아졌음에도 불구하고 빨리 자랄 것이라고 말하는 상황적 아이러니"
+            }
+          ],
+          "culturalReferences": [],
+          "key_vocabulary": [
+            {
+              "en": "at length",
+              "pronunciation": "앳 렝스",
+              "part_of_speech": "idiom",
+              "ko_gloss": "마침내, 결국",
+              "context_note_ko": "감정의 격동이 지나가고 진정되었음을 나타냄"
+            }
+          ],
+          "notable_quote": "My hair grows so fast, Jim!",
+          "dialogueSpeaker": "Della",
+          "ambiguity_level": "low",
+          "translation_difficulty": "low",
+          "flag_for_revision": false,
+          "flag_reason": "",
+          "key_ability": []
+        }
+      },
+      {
+        "blockId": "block_037",
+        "originalText": "And then Della leaped up like a little singed cat and cried, “Oh, oh!”",
+        "literary_translation": "그러자 델라는 마치 불에 데인 고양이처럼 펄쩍 뛰어오르며 \"어머, 어머!\" 하고 외쳤습니다.",
+        "literal_translation": "그리고 나서 델라는 작은 불에 데인 고양이처럼 뛰어올랐고 \"오, 오!\" 하고 외쳤습니다.",
+        "korean_commentary": "선물을 확인한 델라의 들뜬 흥분과 에너지를 묘사합니다. 이전의 눈물 섞인 통곡에서 갑작스러운 활기로 전환되는 순간입니다.",
+        "annotations": {
+          "containsForeshadowing": false,
+          "foreshadowingSetupRef": null,
+          "containsCallback": false,
+          "callbackRef": null,
+          "toneShift": "hysterical to energetic",
+          "sceneTransition": false,
+          "symbolismPresent": [],
+          "literaryDevices": [
+            {
+              "device": "simile",
+              "description_ko": "델라의 돌발적이고 민첩한 움직임을 '불에 데인 고양이'에 비유함"
+            }
+          ],
+          "culturalReferences": [],
+          "key_vocabulary": [
+            {
+              "en": "singed cat",
+              "pronunciation": "싱드 캣",
+              "part_of_speech": "adj. + n.",
+              "ko_gloss": "불에 데인 고양이",
+              "context_note_ko": "갑작스럽고도 격렬한 움직임을 시각적으로 표현"
+            }
+          ],
+          "notable_quote": null,
+          "dialogueSpeaker": "Della",
+          "ambiguity_level": "low",
+          "translation_difficulty": "low",
+          "flag_for_revision": false,
+          "flag_reason": ""
+        }
+      },
+      {
+        "blockId": "block_038",
+        "originalText": "Jim had not yet seen his beautiful present. She held it out to him\neagerly upon her open palm. The dull precious metal seemed to flash\nwith a reflection of her bright and ardent spirit.",
+        "literary_translation": "짐은 아직 자신의 아름다운 선물을 보지 못했습니다. 델라는 펼친 손바닥 위에 선물을 간절하게 내밀었습니다. 둔탁한 빛을 내는 그 금속은 그녀의 밝고 열정적인 영혼을 투영하듯 번뜩이는 듯했습니다.",
+        "literal_translation": "짐은 아직 그의 아름다운 선물을 보지 못했습니다. 그녀는 그의 펼쳐진 손바록 위에 그것을 열정적으로 내밀었습니다. 둔탁한 귀금속은 그녀의 밝고 열렬한 정신의 반사광으로 번뜩이는 듯 보였습니다.",
+        "korean_commentary": "델라가 준비한 시계 줄을 짐에게 보여주는 장면입니다. 물건 자체의 광택을 델라의 내면적 열정과 연결하여 묘사합니다.",
+        "annotations": {
+          "containsForeshadowing": false,
+          "foreshadowingSetupRef": null,
+          "containsCallback": false,
+          "callbackRef": null,
+          "toneShift": null,
+          "sceneTransition": false,
+          "symbolismPresent": [
+            "platinum fob chain"
+          ],
+          "literaryDevices": [
+            {
+              "device": "metaphor",
+              "description_ko": "금속의 반짝임을 델라의 영혼(spirit)의 빛에 비유하여 인물의 내면을 투영함"
+            }
+          ],
+          "culturalReferences": [],
+          "key_vocabulary": [
+            {
+              "en": "ardent spirit",
+              "pronunciation": "아던트 스피릿",
+              "part_of_speech": "adj. + n.",
+              "ko_gloss": "열렬한 정신/영혼",
+              "context_note_ko": "델라의 헌신적이고 뜨거운 사랑을 상징"
+            }
+          ],
+          "notable_quote": null,
+          "dialogueSpeaker": null,
+          "ambiguity_level": "low",
+          "translation_difficulty": "low",
+          "flag_for_revision": false,
+          "flag_reason": "",
+          "cultural_references": []
+        }
+      },
+      {
+        "blockId": "block_039",
+        "originalText": "“Isn’t it a dandy, Jim? I hunted all over town to find it. You’ll have\nto look at the time a hundred times a day now. Give me your watch. I\nwant to see how it looks on it.”",
+        "literary_translation": "\"정말 멋지지 않나요, 짐? 이거 찾으려고 온 동네를 다 뒤졌다고요. 이제 하루에 백 번은 시계를 확인하게 될 거예요. 자, 시계 좀 줘봐요. 어울리는지 보고 싶단 말이에요.\"",
+        "literal_translation": "\"정말 멋지지 않나요, 짐? 나는 그것을 찾기 위해 마을 전체를 뒤졌어요. 당신은 이제 하루에 백 번은 시간을 확인해야 할 거예요. 당신의 시계를 주세요. 그것에 어떻게 보이는지 보고 싶어요.\"",
+        "korean_commentary": "자신이 산 선물을 자랑하며 짐의 시계에 직접 채워보고 싶어 하는 델라의 들뜬 대사입니다. 짐의 시계가 여전히 존재함을 독자에게 상기시킵니다.",
+        "annotations": {
+          "containsForeshadowing": false,
+          "foreshadowingSetupRef": null,
+          "containsCallback": false,
+          "callbackRef": null,
+          "toneShift": null,
+          "sceneTransition": false,
+          "symbolismPresent": [],
+          "literaryDevices": [
+            {
+              "device": "hyperbole",
+              "description_ko": "하루에 백 번은 시계를 보게 될 것이라는 과장법을 통해 선물의 만족감을 표현"
+            }
+          ],
+          "culturalReferences": [],
+          "key_vocabulary": [
+            {
+              "en": "dandy",
+              "pronunciation": "댄디",
+              "part_of_speech": "n./adj.",
+              "ko_gloss": "아주 멋진 것",
+              "context_note_ko": "구어체로 매우 훌륭하거나 멋진 물건을 지칭"
+            }
+          ],
+          "notable_quote": "Isn't it a dandy, Jim?",
+          "dialogueSpeaker": "Della",
+          "ambiguity_level": "low",
+          "translation_difficulty": "low",
+          "flag_for_revision": false,
+          "flag_reason": "",
+          "cultural_references": []
+        }
+      },
+      {
+        "blockId": "block_040",
+        "originalText": "Instead of obeying, Jim tumbled down on the couch and put his hands\nunder the back of his head and smiled.",
+        "literary_translation": "하지만 짐은 그 말에 따르는 대신, 소파에 몸을 털썩 던지듯 눕더니 머리 뒤로 손을 괴고는 그저 미소 지을 뿐이었습니다.",
+        "literal_translation": "대신에, 짐은 소파 위로 쓰러지듯 누워 그의 손을 그의 머리 뒤에 두고 미소 지었습니다.",
+        "korean_commentary": "델라의 요구(시계를 달라는 요청)에 즉각 반응하지 않고, 짐이 묘한 미소를 지으며 눕는 장면입니다. 이는 짐이 이미 자신의 시계를 팔았다는 사실을 숨기고 있는 긴장된 순간을 암시합니다.",
+        "annotations": {
+          "containsForeshadowing": true,
+          "foreshadowingSetupRef": "Jim's gold watch (sold)",
+          "containsCallback": false,
+          "callbackRef": null,
+          "toneShift": "energetic to contemplative/tense",
+          "sceneTransition": false,
+          "symbolismPresent": [],
+          "literaryDevices": [
+            {
+              "device": "irony",
+              "description_ko": "델라는 시계 줄을 채워보려 하지만, 짐은 이미 시계가 없기에 그 요청에 응할 수 없는 상황적 아이러니"
+            }
+          ],
+          "culturalReferences": [],
+          "key_vocabulary": [
+            {
+              "en": "tumbled down",
+              "pronunciation": "텀블드 다운",
+              "part_of_speech": "v.",
+              "ko_gloss": "쓰러지듯 눕다",
+              "context_note_ko": "힘없이 혹은 의도적으로 몸을 맡기는 동작"
+            }
+          ],
+          "notable_quote": null,
+          "dialogueSpeaker": "Jim",
+          "ambiguity_level": "low",
+          "translation_difficulty": "low",
+          "flag_for_revision": false,
+          "flag_reason": "",
+          "cultural_references": []
+        }
+      },
+      {
+        "blockId": "block_041",
+        "originalText": "“Dell,” said he, “let’s put our Christmas presents away and keep ’em a\nwhile. They’re too nice to use just at present. I sold the watch to get\nthe money to buy your combs. And now suppose you put the chops on.”",
+        "literary_translation": "\"델,\" 그가 말했습니다. \"우리 크리스마스 선물은 일단 넣어두자. 지금 당장 쓰기에는 너무 아깝잖아. 당신 머리빗을 사려고 시계를 팔았거든. 자, 이제 고기 요리나 준비해 줘요.\"",
+        "literal_translation": "\"델,\" 그가 말했다, \"우리의 크리스마스 선물들을 치워두고 잠시 보관하자. 그것들은 현재 사용하기에는 너무나 좋다. 나는 당신의 빗들을 사기 위한 돈을 얻기 위해 시계를 팔았다. 그리고 이제 당신이 찹(고기 요리)을 불 위에 올려두자고 하자.\"",
+        "korean_commentary": "짐이 델라에게 자신의 희생(시계를 판매함)을 고백하며, 선물로 인해 발생한 아이러니한 상황을 일단락시키려 합니다. 그는 슬픔에 잠기기보다 일상적인 식사 준비로 화제를 전환하며 분위기를 다독입니다.",
+        "annotations": {
+          "containsForeshadowing": false,
+          "foreshadowingSetupRef": null,
+          "containsCallback": false,
+          "callbackRef": null,
+          "toneShift": "From tension to revelation and resignation",
+          "sceneTransition": false,
+          "symbolismPresent": [
+            "Jim's gold watch"
+          ],
+          "literaryDevices": [
+            {
+              "device": "irony",
+              "description_ko": "서로를 위해 가장 소중한 것을 팔았기에, 정작 선물은 쓸모없게 되어버린 상황적 아이러니가 드러남"
+            }
+          ],
+          "culturalReferences": [
+            {
+              "term": "put the chops on",
+              "explanation_ko": "고기(chops)를 불 위에 올려 요리를 시작하자는 의미로, 갈등을 뒤로하고 일상으로 돌아가려는 의도를 담음"
+            }
+          ],
+          "key_vocabulary": [
+            {
+              "en": "chaste",
+              "pronunciation": "체이스트",
+              "part_of_speech": "adj.",
+              "ko_gloss": "순수한, 소박한",
+              "context_note_ko": "이전 블록의 시계 줄 묘사에서 사용됨"
+            },
+            {
+              "en": "chops",
+              "pronunciation": "찹스",
+              "part_of_speech": "n.",
+              "ko_gloss": "고기 요리(갈비 등)",
+              "context_note_ko": "식사 준비를 의미하는 일상적 표현"
+            }
+          ],
+          "notable_quote": "I sold the watch to get the money to buy your combs.",
+          "dialogueSpeaker": "Jim",
+          "ambiguity_level": "low",
+          "translation_difficulty": "low",
+          "flag_for_revision": false,
+          "flag_reason": ""
+        }
+      },
+      {
+        "blockId": "block_042",
+        "originalText": "The magi, as you know, were wise men—wonderfully wise men—who brought\ngifts to the Babe in the manger. They invented the art of giving\nChristmas presents. Being wise, their gifts were no doubt wise ones,\npossibly bearing the privilege of exchange in case of duplication. And\nhere I have lamely related to you the uneventful chronicle of two\nfoolish children in a flat who most unwisely sacrificed for each other\nthe greatest treasures of their house. But in a last word to the wise\nof these days let it be said that of all who give gifts these two were\nthe wisest. Of all who give and receive gifts, such as they are wisest.\nEverywhere they are wisest. They are the magi.",
+        "literary_translation": "잘 알다시피, 동방박사들은 구유에 누운 아기에게 선물을 가져다준 지혜로운 이들이었습니다. 그들은 크리스마스 선물을 주는 예술을 창시한 분들이지요. 지혜로운 분들이었기에 그들의 선물 또한 의심할 여지 없이 현명했을 것이며, 혹여 중복될 경우를 대비해 교환할 수 있는 특권까지 누렸을지도 모릅니다. 그러나 저는 지금 이 작은 아파트에서 서로를 위해 집안의 가장 귀한 보물을 가장 어리석게 희생해 버린, 두 어린 아이의 별것 아닌 이야기를 서투르게 들려드렸습니다. 하지만 이 시대의 지혜로운 이들에게 마지막 한 마기(Magi)의 말을 전하자면, 선물을 주는 모든 이들 중 이 두 사람이 가장 지혜로웠다고 말하고 싶습니다. 선물을 주고받는 모든 이들 중, 이들과 같은 이들이 가장 지혜롭습니다. 어디에서나 그들이 가장 지혜롭습니다. 그들이 바로 동방박사들입니다.",
+        "literal_translation": "당신도 알다시피, 동방박사들은 구유의 아기에게 선물을 가져다준 지혜로운 사람들—놀랍도록 지혜로운 사람들—이었습니다. 그들은 크리스마스 선물을 주는 기술을 발명했습니다. 지혜로웠기에, 그들의 선물은 의심할 여지 없이 지혜로운 것이었으며, 아마도 중복될 경우를 대비한 교환의 특권을 가졌을 것입니다. 그리고 여기 나는 한 아파트에 사는 두 어리석은 아이의 별일 없는 연대기를 당신에게 서투르게 이야기했습니다. 그들은 서로를 위해 그들의 집에서 가장 큰 보물들을 가장 현명하지 못하게 희생했습니다. 하지만 이 시대의 지혜로운 이들에게 전하는 마지막 말로서, 선물을 주는 모든 이들 중 이 두 사람이 가장 지혜로웠다고 말해지기를 바랍니다. 선물을 주고받는 모든 이들 중, 이들과 같은 이들이 가장 지혜롭습니다. 어디에서나 그들이 가장 지혜롭습니다. 그들이 바로 동방박사들입니다.",
+        "korean_commentary": "작가는 짐과 델라의 행동을 '어리석은 희생'이라고 정의하면서도, 역설적으로 그들이야말로 진정한 의미의 '동방박사(Magi)'라고 찬양합니다. 물질적 가치를 넘어선 사랑의 숭고함을 강조하며 이야기를 마무리합니다.",
+        "annotations": {
+          "containsForeshadowing": false,
+          "foreshadowingSetupRef": null,
+          "containsCallback": true,
+          "callbackRef": "The Magi",
+          "toneShift": "From narrative summary to philosophical/didactic conclusion",
+          "sceneTransition": true,
+          "symbolismPresent": [
+            "The Magi"
+          ],
+          "literaryDevices": [
+            {
+              "device": "paradox",
+              "description_ko": "가장 어리석은 희생을 한 이들이 가장 지혜로운 자들이라는 역설적 결론"
+            },
+            {
+              "device": "allegory",
+              "description_ko": "짐과 델라의 이야기를 동방박사의 행위에 빗대어 영적인 교훈을 전달함"
+            }
+          ],
+          "culturalReferences": [
+            {
+              "term": "The Magi",
+              "explanation_ko": "예수의 탄생을 축하하기 위해 찾아온 동방의 현자들"
+            }
+          ],
+          "key_vocabulary": [
+            {
+              "en": "unwieldy/uneventful chronicle",
+              "pronunciation": "언이벤트풀 크로니클",
+              "part_of_speech": "n. phrase",
+              "ko_gloss": "별일 없는 연대기",
+              "context_note_ko": "자신의 이야기를 겸손하게 낮추어 표현함"
+            },
+            {
+              "en": "lamely",
+              "pronunciation": "레임리",
+              "part_of_speech": "adv.",
+              "ko_gloss": "서투르게, 불충분하게",
+              "context_note_ko": "이야기를 전달하는 화자의 겸손한 태도"
+            }
+          ],
+          "notable_quote": "Of all who give and receive gifts, such as they are wisest.",
+          "dialogueSpeaker": "Narrator",
+          "ambiguity_level": "low",
+          "translation_difficulty": "high",
+          "flag_for_revision": false,
+          "flag_reason": ""
+        }
+      }
+    ],
+    "synthesis_markdown": "# The Gift of the Magi — 분석 보고서\n\n## 1. 작품 개요\n- **주제 및 메시지**: 진정한 사랑은 물질적 소유를 초월한 자기희생을 통해 완성됩니다. 가장 소중한 것을 포기할 수 있는 용기가 가장 지혜로운 사랑의 형태임을 전달합니다.\n- **전체 톤과 인상**: 경제적 결핍에서 오는 우울함과 애잔함으로 시작하여, 인물들의 헌신을 통해 숭고하고 따뜻한 교훈을 남기며 마무리되는 경건한 인상을 줍니다.\n\n## 2. 인물 분석\n\n### **Della (델라)**\n- **인물 변화**: 크리스마스 선물을 사기 위한 돈이 부족하여 절망하고 슬퍼하는 상태에서 시작합니다. 남편을 위해 자신의 가장 소중한 보물인 머리카락을 팔기로 결심하며, 머리카락을 판 후 변해버린 자신의 모습을 남편이 보고 실망할까 봐 불안해합니다. 하지만 결국 자신의 희생으로 산 선물이 무용지물이 된 상황에서도 남편의 사랑을 확인하며 헌신적인 사랑의 가치를 보여줍니다.\n- **주요 인용**:\n  > \"Please God, make him think I am still pretty.\" — \"하나님, 제발 그가 제가 여전히 예쁘다고 생각하게 해주세요.\"\n\n### **Jim (짐)**\n- **인물 변화**: 가족을 부양하기 위해 경제적 어려움을 겪고 있는 젊은 가장으로, 자신의 소중한 유산인 금시계를 지키려 노력합니다. 집에 돌아와 변해버린 델라의 모습을 보고 충격과 당혹감으로 인해 일시적인 망연으로 빠지기도 합니다. 그러나 자신의 시계를 팔아 아내의 머리빗을 샀음을 밝히며, 두 사람의 희생이 헛되지 않았음을 보여주는 지혜로운 모습을 보입니다.\n- **주요 인용**:\n  > \"I don't think there's anything in the way of a haircut or a shave or a shampoo that could make me like my girl any less.\" — \"이발을 하든, 면도를 하든, 샴푸를 하든, 그 어떤 것도 내 사랑을 덜 사랑하게 만들 수는 없을 거라고 생각해요.\"\n\n## 3. 플롯 구조\n\n| 단계 | 요약 | 근거 문장 (Evidence Quote) |\n| :--- | :--- | :--- |\n| **발단** | 델라는 크리스마스 선물을 사기에 턱없이 부족한 1달러 87센트를 보며 슬퍼합니다. | `\"One dollar and eighty-seven cents. That was all.\"` — \"1달러 87센트. 그것이 전부였다.\" |\n| **전개** | 델라는 남편을 위한 선물을 사기 위해 자신의 아름다운 머리카락을 팔기로 결심하고 실행합니다. | `\"Will you buy my hair? asked Della.\"` — \"제 머리카락을 사주시겠어요? 델라가 물었다.\" |\n| **위기** | 남편 짐이 집에 돌아오고, 변해버린 델라의 모습을 보고 멍한 표정으로 그녀를 바라봅니다. | `\"His eyes were fixed upon Della, and there was an expression in them that she could not read\"` — \"그의 눈은 델라에게 고정되어 있었고, 그 눈빛에는 그녀가 읽을 수 없는 어떤 표정이 담겨 있었다.\" |\n| **절정** | 두 사람은 서로를 위해 가장 소중한 것을 팔아 서로에게 쓸모없게 된 선물을 준비했음을 알게 됩니다. | `\"I sold the watch to get the money to buy your combs.\"` — \"당신의 머리빗을 사려고 시계를 팔았어요.\" |\n| **결말** | 작가는 이 두 사람이 비록 어리극해 보일지라도, 가장 지혜로운 '동방박사(Magi)'와 같다고 결론짓습니다. | `\"Of all who give and receive gifts, such as they are wisest.\"` — \"선물을 주고받는 모든 이들 중, 이들 같은 이들이 가장 지혜롭다.\" |\n\n## 4. 반전 · 아이러니\n- **반전**: 델라는 짐을 위해 시계 줄을 샀지만, 짐은 델라의 머리빗을 사기 위해 자신의 시계를 팔았습니다.\n- **복선**: \n  > `\"The 'Dillingham' had been flung to the breeze during a former period of prosperity\"` — \"'딜링햄'이라는 이름은 과거 번영했던 시절에 당당히 불리곤 했다.\" (과거의 풍요와 현재의 가난을 대비시켜, 앞으로 일어날 경제적 희생을 암시함)\n- **회수**: \n  > `\"I sold the watch to get the money to buy your combs.\"` — \"당신의 머리빗을 사려고 시계를 팔았어요.\" (짐의 희생이 드러나며 델라의 머리카락 판매와 맞물림)\n- **아이러니의 방향**: 두 사람의 선물은 서로의 가장 소중한 소유물을 없애버림으로써 '물상적 가치' 측면에서는 완전히 무용지물이 되었으나, '정신적 가치' 측면에서는 극대화되었습니다.\n- **비교 구조**: 물질적인 선물(시계 줄, 머리빗)은 쓸모없게 되었으나, 두 사람의 사랑(Magi의 지혜)은 그 무엇보다 가치 있는 것으로 제시됩니다.\n\n## 5. 상징과 모티프\n- **상징 (Symbolism)**\n    - **Della's hair (델라의 머리카락)**: 델라의 아름다움과 자부심, 그리고 남편을 향한 무조건적인 희생을 상징합니다.\n        - `\"reaches below her knee\"` — \"무릎 아래까지 내려오는\"\n        - `\"rippling and shining like a cascade of brown waters\"` — \"갈색 폭포처럼 물결치며 빛나는\"\n    - **Jim's gold watch (짐의 금시계)**: 가문의 전통과 유산, 그리고 남편의 자부심을 상징합니다.\n        - `\"had been his father's and his grandfather's\"` — \"그의 아버지와 할아버지의 것이었던\"\n    - **The Magi (동방박사)**: 지혜로운 선물 증여의 원형이자, 진정한 가치를 아는 자들을 상징합니다.\n        - `\"The magi, as you know, were wise men\"` — \"아시다시피, 동방박사들은 지혜로운 사람들이었습니다.\"\n- **모티프 (Motifs)**\n    - **가문의 보물**: 머리카락과 금시계.\n    - **크리스마스 선물**: 희생의 매개체.\n            - **경제적 결핍**: 1달러 87센트라는 구체적인 액수를 통해 결핍을 강조.\n\n## 6. 톤 흐름\n작품의 분위기는 경제적 결핍으로 인한 **우울하고 침울한 톤**으로 시작됩니다. 중반부에는 선물을 준비하는 과정에서 느껴지는 **설렘과 불안**이 교차하며 긴장감이 고조됩니다. 결말에 이르러서는 두 사람의 희생을 '지혜'로 격상시키며 **따뜻하고 경건한 톤**으로 마무리됩니다.\n\n## 7. 문체 특징\n- **화자 시점**: 3인칭 전지적 작가 시점이며, 화자가 독자에게 직접 말을 거는 듯한 개입적 서술이 특징입니다.\n- **방언·언어 사용역**: 표준 영어를 사용하되, 화자가 독자를 'dear friends'라고 부르며 친근하게 말을 거는 구어체적 특징이 있습니다.\n- **유머 기법**: 아이러니(Irony)와 풍자적 유머(Satirical humor)를 사용합니다.\n- **인상적 원문**:\n  > `\"Forget the hashed metaphor.\"` — \"서툰 비유는 잊어주십시오.\" (자신의 비유가 서툴렀음을 인정하며 독자와 소통하는 메타적 서술)\n\n## 8. 문화·역사적 맥락\n- **시대적 배경**: 20세기 초 미국의 경제적 격차와 중산층 이하의 고단한 삶, 그리고 크리스마스 전통과 선물 교환 문화를 배경으로 합니다.\n- **문화적 참조**:\n    - **Magi (동방박사)**: 예수의 탄생을 축하하기 위해 찾아온 지혜로운 자들의 상징입니다.\n    - **Queen of Sheba / King Solomon (시바 여왕 / 솔로몬 왕)**: 성경 속 부유하고 지혜로운 인물들로, 델라와 짐이 가진 보물의 가치를 극대화하기 위해 인용되었습니다.\n\n## 9. 한국 독자를 위한 읽기 가이드\n1. **아이러니의 역설을 이해하기**: 선물이 '쓸모없게 되었다'는 사실에만 집중하면 비극으로 느껴질 수 있습니다. 하지만 작가는 이 무용지물이 된 물건들이 오히려 두 사람의 사랑을 증명하는 가장 강력한 증거가 되었다는 역설적 가치에 주목합니다.\n2. **상징의 무게감 느끼기**: 델라의 머리카락과 짐의 시계는 단순한 물건이 아니라 각자의 '자부심'과 '유산'입니다. 이들이 무엇을 포기했는지를 생각하며 읽으면 희생의 숭고함이 더 깊게 다가옵니다.\n3. **화자의 개입에 주목하기**: 작가가 독자에게 말을 거는 듯한 서술 방식은 이 이야기가 단순한 허구가 아니라, 우리 삶의 보편적인 진리를 전달하려는 따뜻한 메시지임을 느끼게 해줍니다.",
+    "verification": {
+      "verified": true
+    },
+    "stats": {
+      "totalTokens": 33089,
+      "totalTimeS": 1166.4,
+      "avgTokS": 28,
+      "steps": [
+        {
+          "step": 1,
+          "label": "Profile",
+          "tokens": 2168,
+          "timeS": 79.98,
+          "tokS": 27
+        },
+        {
+          "step": 2,
+          "label": "Block Batches",
+          "tokens": 28708,
+          "timeS": 1001.599,
+          "tokS": 29
+        },
+        {
+          "step": 4,
+          "label": "Synthesis",
+          "tokens": 2202,
+          "timeS": 80.605,
+          "tokS": 0
+        },
+        {
+          "step": 5,
+          "label": "Verify",
+          "tokens": 11,
+          "timeS": 4.201,
+          "tokS": 0
+        }
+      ]
+    },
+    "adapter_outputs": {}
+  }
+}
