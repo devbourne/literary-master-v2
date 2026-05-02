@@ -1,11 +1,10 @@
-import { callLLM, streamLLMChunks } from "../llm";
-import { buildProfilePrompt } from "../prompts/profile";
+import { callLLM } from "../llm";
+import { runProfileAgent } from "../agents/profile-agent";
 import { buildBlockBatchPrompt } from "../prompts/block-batch";
 import { buildRevisePrompt } from "../prompts/pass3-revise";
-import { buildSynthesisPromptV2 } from "../prompts/synthesis";
-import { WorkProfileSchema, type WorkProfile } from "../schemas/profile";
+import { type WorkProfile } from "../schemas/profile";
 import { BatchResponseSchema, AnnotatedBlockSchema, type AnnotatedBlock } from "../schemas/block";
-import { SynthesisSchema, type Synthesis } from "../schemas/synthesis";
+import { type Synthesis } from "../schemas/synthesis";
 import { safeParseLLM } from "../schemas/safe-parse";
 import { synthesisToPlainText } from "./synthesis-to-text";
 import { splitIntoBlocks } from "./blocker";
@@ -22,6 +21,7 @@ import {
   runCoverageRepairAgent,
   type CoverageRepairTarget,
 } from "../agents/coverage-repair-agent";
+import { runSynthesisAgent } from "../agents/synthesis-agent";
 import { evaluateFinalizationGate } from "./finalization-gate";
 import type { PipelineEvent } from "../types";
 import type { PipelineStats, Sources, StepStat } from "../schemas/teaching-material";
@@ -85,26 +85,27 @@ export async function orchestrate(
   const missingBlockIds: string[] = [];
   const emptyBlockIds: string[] = [];
 
-  // ── Pass 1: Profile ──
+  // ── Pass 1: Profile (v2 Phase B Profile Agent — strategy by length) ──
   send({ type: "status", phase: "profile", message: "작품 프로파일 구축 중..." });
   log("pass1", "input", `${text.length} chars`);
-  const t1 = Date.now();
-  const profileLLM = await callLLM(buildProfilePrompt(text), 5000, signal);
-  const profileTime = (Date.now() - t1) / 1000;
-  log("pass1", "raw", profileLLM.text);
-  const profileParse = safeParseLLM(WorkProfileSchema, profileLLM.text, "Profile");
-  if (!profileParse.ok) fallbackCount++;
-  const profile: WorkProfile = profileParse.data;
-  log("pass1", "parsed_ok", profileParse.ok ? "YES" : "NO (fallback)");
+  const profileRes = await runProfileAgent({ text, signal });
+  if (!profileRes.parseOk) fallbackCount++;
+  const profile: WorkProfile = profileRes.profile;
+  log("pass1", "strategy", {
+    strategy: profileRes.strategy,
+    partialCount: profileRes.partialCount,
+    parseOk: profileRes.parseOk,
+    steps: profileRes.steps,
+  });
   log("pass1", "parsed_profile", profile);
   stats.push({
     step: 1,
-    label: "Profile",
-    tokens: profileLLM.usage.completionTokens,
-    timeS: profileTime,
-    tokS: Math.round(profileLLM.usage.completionTokens / Math.max(profileTime, 0.1)),
+    label: `Profile (${profileRes.strategy}${profileRes.partialCount ? `, ${profileRes.partialCount}+1 calls` : ""})`,
+    tokens: profileRes.tokens,
+    timeS: profileRes.timeS,
+    tokS: Math.round(profileRes.tokens / Math.max(profileRes.timeS, 0.1)),
   });
-  totalTokens += profileLLM.usage.completionTokens;
+  totalTokens += profileRes.tokens;
   send({ type: "profile_complete", profile });
 
   // ── Pass 2: Block Batches ──
@@ -337,50 +338,42 @@ export async function orchestrate(
     });
   }
 
-  // ── Synthesis (streamed → JSON) ──
+  // ── Synthesis (v2 Phase B: length-routing strategy) ──
   send({
     type: "status",
     phase: "synthesis",
     message: "종합 분석 작성 중...",
   });
-  const annotatedSummary = summarizeBlocksForSynthesis(annotated);
-  const synthPrompt = buildSynthesisPromptV2({ profile, annotatedSummary });
-  let synthRaw = "";
-  let synthTokens = 0;
-  let lastProgressTick = 0;
-  const tSynthStart = Date.now();
   checkAborted("synthesis");
-  const gen = streamLLMChunks(synthPrompt, 6000, signal);
-  while (true) {
-    const { done, value } = await gen.next();
-    if (done) {
-      synthTokens = (value as { completionTokens: number })?.completionTokens ?? 0;
-      break;
-    }
-    synthRaw += value;
-    // JSON output; don't stream raw chunks to UI. Send status tick every ~500 chars.
-    if (synthRaw.length - lastProgressTick > 500) {
-      lastProgressTick = synthRaw.length;
+  const synthRes = await runSynthesisAgent({
+    profile,
+    annotated,
+    summarizeBlocks: summarizeBlocksForSynthesis,
+    signal,
+    onProgress: (chars) => {
       send({
         type: "status",
         phase: "synthesis",
-        message: `종합 분석 작성 중 · ${synthRaw.length.toLocaleString()}자 수신`,
+        message: `종합 분석 작성 중 · ${chars.toLocaleString()}자 수신`,
       });
-    }
-  }
-  totalTokens += synthTokens;
+    },
+  });
+  if (!synthRes.parseOk) fallbackCount++;
+  const synthesis: Synthesis = synthRes.synthesis;
+  totalTokens += synthRes.tokens;
   stats.push({
     step: 4,
-    label: "Synthesis",
-    tokens: synthTokens,
-    timeS: (Date.now() - tSynthStart) / 1000,
+    label: `Synthesis (${synthRes.strategy}${synthRes.partialCount ? `, ${synthRes.partialCount}+1 calls` : ""})`,
+    tokens: synthRes.tokens,
+    timeS: synthRes.timeS,
     tokS: 0,
   });
-  log("synthesis", "raw", synthRaw);
-  const synthParse = safeParseLLM(SynthesisSchema, synthRaw, "Synthesis");
-  if (!synthParse.ok) fallbackCount++;
-  const synthesis: Synthesis = synthParse.data;
-  log("synthesis", "parsed_ok", synthParse.ok ? "YES" : "NO (salvaged)");
+  log("synthesis", "strategy", {
+    strategy: synthRes.strategy,
+    partialCount: synthRes.partialCount,
+    parseOk: synthRes.parseOk,
+    steps: synthRes.steps,
+  });
   let synthesisForOutput: Synthesis = synthesis;
   const synthesisPlain = synthesisToPlainText(synthesis);
 
@@ -504,7 +497,7 @@ export async function orchestrate(
     partialBlockCount: finalPartialCount,
     verifyStatus: verifyRes.status,
     verifyIterations: verifyRes.iterations,
-    profileParseOk: profileParse.ok,
+    profileParseOk: profileRes.parseOk,
     fallbackCount,
     hasFatalError: false,
   });
