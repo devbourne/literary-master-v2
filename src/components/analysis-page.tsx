@@ -22,6 +22,8 @@ interface ScanInfo {
   title?: string;
   author?: string;
   pieces: PieceInfo[];
+  /** Raw {title, start_quote} pairs from scan, forwarded to /api/extract on pick. */
+  serverPieces: { title: string; start_quote?: string }[];
 }
 
 export function AnalysisPage() {
@@ -32,27 +34,9 @@ export function AnalysisPage() {
   const [scanInfo, setScanInfo] = useState<ScanInfo | null>(null);
   const [scanning, setScanning] = useState(false);
 
-  // Extract a piece from full text by finding title boundaries
-  function extractPiece(text: string, pieces: PieceInfo[], index: number): string {
-    const piece = pieces[index];
-    const nextPiece = pieces[index + 1];
-
-    // Find piece title in text (skip TOC — find second occurrence)
-    const title = piece.title;
-    const firstPos = text.indexOf(title);
-    const secondPos = firstPos >= 0 ? text.indexOf(title, firstPos + title.length + 5) : -1;
-    const startPos = secondPos >= 0 ? secondPos : (firstPos >= 0 ? firstPos : 0);
-
-    // Find end
-    let endPos = text.length;
-    if (nextPiece) {
-      const nextTitle = nextPiece.title;
-      const np = text.indexOf(nextTitle, startPos + 100);
-      if (np >= 0) endPos = np;
-    }
-
-    return text.slice(startPos, endPos).trim();
-  }
+  // v2 Phase D: piece boundary resolution moved to /api/extract (server-side
+  // segmentation agent). Client only carries title + start_quote forward.
+  type ServerPiece = { title: string; start_quote?: string };
 
   const handleSubmitText = async (text: string, meta?: { sourceUrl?: string }) => {
     setFullText(text);
@@ -60,7 +44,6 @@ export function AnalysisPage() {
     setScanning(true);
 
     try {
-      // Send only a sample to scan API
       const sample = text.slice(0, 4000);
       const res = await fetch("/api/scan", {
         method: "POST",
@@ -69,8 +52,12 @@ export function AnalysisPage() {
       });
       const data = await res.json();
 
-      if (data.error || data.type === "single" || !data.pieces || data.pieces.length <= 1) {
-        // Single piece — go directly to analysis. raw == analyzed.
+      if (
+        data.error ||
+        data.type === "single" ||
+        !data.pieces ||
+        data.pieces.length <= 1
+      ) {
         startAnalysis(text, {
           rawText: text,
           sourceUrl: meta?.sourceUrl,
@@ -79,33 +66,43 @@ export function AnalysisPage() {
         return;
       }
 
-      // Collection — enrich with client-side text matching
-      // Handle both {title: string} objects and plain strings
-      const rawPieces: string[] = data.pieces.map((p: string | { title: string }) =>
-        typeof p === "string" ? p : p.title
+      const serverPieces: ServerPiece[] = data.pieces.map(
+        (p: string | { title: string; start_quote?: string }) =>
+          typeof p === "string"
+            ? { title: p }
+            : { title: p.title, start_quote: p.start_quote },
       );
-      const pieces: PieceInfo[] = rawPieces.map((title: string, i: number) => {
-        const firstPos = text.indexOf(title);
-        const secondPos = firstPos >= 0 ? text.indexOf(title, firstPos + title.length + 5) : -1;
-        const startPos = secondPos >= 0 ? secondPos : firstPos;
 
-        const nextTitle = rawPieces[i + 1];
-        let endPos = text.length;
-        if (nextTitle) {
-          const np = text.indexOf(nextTitle, (startPos >= 0 ? startPos : 0) + 100);
-          if (np >= 0) endPos = np;
-        }
+      // Per-piece preview now uses the server segmentation agent so the
+      // client doesn't have to duplicate the boundary logic.
+      const pieces: PieceInfo[] = await Promise.all(
+        serverPieces.map(async (p, i) => {
+          try {
+            const ex = await fetch("/api/extract", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ text, pieceIndex: i, pieces: serverPieces }),
+            });
+            const result = await ex.json();
+            const pieceText: string = result.text ?? "";
+            return {
+              title: p.title,
+              index: i,
+              wordCount: pieceText.split(/\s+/).filter(Boolean).length,
+              preview: pieceText.slice(0, 200).replace(/\n+/g, " ").trim(),
+            };
+          } catch {
+            return { title: p.title, index: i, wordCount: 0, preview: "" };
+          }
+        }),
+      );
 
-        const pieceText = startPos >= 0 ? text.slice(startPos, endPos) : "";
-        return {
-          title,
-          index: i,
-          wordCount: pieceText.split(/\s+/).filter(Boolean).length,
-          preview: pieceText.slice(0, 200).replace(/\n+/g, " ").trim(),
-        };
+      setScanInfo({
+        title: data.title,
+        author: data.author,
+        pieces,
+        serverPieces,
       });
-
-      setScanInfo({ title: data.title, author: data.author, pieces });
       setPhase("picking");
     } catch {
       startAnalysis(text, { rawText: text, sourceUrl: meta?.sourceUrl });
@@ -114,10 +111,26 @@ export function AnalysisPage() {
     }
   };
 
-  const handlePickPiece = (pieceIndex: number) => {
+  const handlePickPiece = async (pieceIndex: number) => {
     if (!scanInfo) return;
-    const extracted = extractPiece(fullText, scanInfo.pieces, pieceIndex);
     const piece = scanInfo.pieces[pieceIndex];
+    let extracted = "";
+    try {
+      const res = await fetch("/api/extract", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: fullText,
+          pieceIndex,
+          pieces: scanInfo.serverPieces,
+        }),
+      });
+      const data = await res.json();
+      extracted = data.text ?? "";
+    } catch {
+      extracted = fullText;
+    }
+    if (!extracted) extracted = fullText;
     startAnalysis(extracted, {
       rawText: fullText,
       sourceUrl,
