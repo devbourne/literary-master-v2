@@ -110,11 +110,12 @@ export async function orchestrate(
   send({ type: "profile_complete", profile });
 
   // ── Pass 2: Block Batches ──
-  // Batch size 3 (was 5): a single batch parse failure costs 3 lost blocks
-  // instead of 5. Combined with the per-batch retry below, this approximately
-  // halved the missing/empty rate in our 11.7 KB Gift of Magi run.
+  // Batch size reverted to 5 after a 3-batch experiment showed 53 batches
+  // (vs 32 at size 5) put total wall-clock above the 20-30 min production
+  // budget for medium-length stories. The per-batch retry below already
+  // handles the loss-recovery role we wanted from the smaller batch.
   const blocks = splitIntoBlocks(text);
-  const batches = chunkBlocks(blocks, 3);
+  const batches = chunkBlocks(blocks, 5);
   log("pass2", "blocks_count", `${blocks.length} blocks in ${batches.length} batches`);
   send({
     type: "status",
@@ -144,7 +145,11 @@ export async function orchestrate(
       totalBatches: batches.length,
       blocks: batches[i],
     });
-    const res = await callLLM(prompt, 4000, signal);
+    // max_predict tightened from 4000 → 2200. Each block emits ~400-500 tokens
+    // of structured JSON; 5 blocks × 500 = 2500. Old 4000 was 60% headroom we
+    // never used and was the dominant wall-clock cost (per-batch time scales
+    // with max_predict more than with actual output size).
+    const res = await callLLM(prompt, 2200, signal);
     log("pass2", `batch_${i}_raw`, res.text);
 
     // Try full-batch parse first
@@ -160,7 +165,7 @@ export async function orchestrate(
       // salvage. Cheap insurance — adds at most one extra LLM call per batch
       // when the first response is malformed.
       log("pass2", `batch_${i}_retry_after_parse_fail`, "first parse empty, retrying");
-      const retryRes = await callLLM(prompt, 4000, signal);
+      const retryRes = await callLLM(prompt, 2200, signal);
       log("pass2", `batch_${i}_retry_raw`, retryRes.text);
       step2Tokens += retryRes.usage.completionTokens;
       totalTokens += retryRes.usage.completionTokens;
@@ -396,22 +401,24 @@ export async function orchestrate(
   let synthesisForOutput: Synthesis = synthesis;
 
   // ── Phase 3: Korean Proofreader (post-Synthesis, pre-Verify) ──
-  // Two trigger paths, since the two failure modes scale differently:
-  //   - Synthesis-side glitches: surface when single-shot synthesis is long
-  //     (≥ 800 chars across the major prose fields). chunk-merge mode
-  //     consolidates and tends to produce shorter, cleaner synthesis but the
-  //     glitches move into the BLOCK stage instead.
-  //   - Block-side glitches: scale with block count. We always proofread block
-  //     fields when block count ≥ 30 (the empirical threshold below which
-  //     block-level glitches don't accumulate enough to matter, based on the
-  //     11.7 KB Gift of Magi run with 159 blocks where block fields had the
-  //     most damage and synthesis came through clean).
+  // Two trigger paths:
+  //   - Synthesis-side: long single-shot synthesis (≥ 800 chars in major
+  //     prose fields).
+  //   - Block-side: large analyses (≥ 30 blocks) — but only when explicitly
+  //     enabled via PROOFREAD_BLOCKS=true env var. Block walking adds 159
+  //     × ~2s = ~5 min (uncached) which alone is ~25% of the production
+  //     20-30 min budget; defaulting it off keeps full short stories in
+  //     budget and lets users opt in for "publication grade" runs.
   const synthesisProseLen =
     (synthesis.overview_essay_ko?.length ?? 0) +
     (synthesis.plot_reading_ko?.length ?? 0) +
     (synthesis.style_essay_ko?.length ?? 0);
+  const proofreadBlocksEnabled =
+    process.env.PROOFREAD_BLOCKS === "true" ||
+    process.env.PROOFREAD_BLOCKS === "1";
   const shouldProofreadSynthesis = synthesisProseLen >= 800;
-  const shouldProofreadBlocks = annotated.length >= 30;
+  const shouldProofreadBlocks =
+    proofreadBlocksEnabled && annotated.length >= 30;
   if (shouldProofreadSynthesis || shouldProofreadBlocks) {
     checkAborted("korean_proofread");
     send({
@@ -467,7 +474,10 @@ export async function orchestrate(
       report: synthesisPlain,
       initialEndingChars: 1500,
       expandedEndingChars: 3000,
-      maxIterations: 3,
+      // Reduced from 3 to 2 for production budget. Round 2 already gives the
+      // CORRECTION-apply loop one shot; iter 3 historically rarely converged
+      // (gemma4 reproduces the same issues on re-verify) and added 30-60s.
+      maxIterations: 2,
       signal,
       // v2: pass the proofread synthesis + a renderer so the agent can apply
       // CORRECTION fixes to the JSON in-place and re-verify.

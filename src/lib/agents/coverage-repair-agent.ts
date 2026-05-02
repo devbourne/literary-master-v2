@@ -82,7 +82,10 @@ export async function runCoverageRepairAgent(
   onStep?: (s: CoverageRepairStep) => void,
 ): Promise<CoverageRepairResult> {
   const t0 = Date.now();
-  const retries = input.retries ?? 2;
+  // Default retry budget reduced from 2 to 1 for production budget compliance.
+  // Caller can still override (input.retries) when running in "publication
+  // grade" mode where the extra recovery rate is worth the wall-clock.
+  const retries = input.retries ?? 1;
   const maxAttempts = retries + 1;
   let tokens = 0;
 
