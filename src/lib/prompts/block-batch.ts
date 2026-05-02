@@ -5,6 +5,10 @@ export interface BlockBatchContext {
   batchIndex: number;
   totalBatches: number;
   blocks: Array<{ blockId: string; text: string }>;
+  /** v2.5 Track C: rendered glossary text injected into the prompt so per-block
+   *  calls translate proper nouns consistently with a single ground-truth
+   *  mapping (prevents e.g. "Magi" → "마귀" in one block and "마기" in another). */
+  glossarySection?: string;
 }
 
 export function buildBlockBatchPrompt(ctx: BlockBatchContext): string {
@@ -17,7 +21,7 @@ export function buildBlockBatchPrompt(ctx: BlockBatchContext): string {
 
 ## 작품 프로파일 (요약)
 ${ctx.profileSummary}
-
+${ctx.glossarySection ? `\n${ctx.glossarySection}\n` : ""}
 ## 지금까지의 이야기 흐름 (누적 요약)
 ${ctx.rollingSummary}
 

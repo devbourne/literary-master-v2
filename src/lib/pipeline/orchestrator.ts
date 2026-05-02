@@ -1,5 +1,7 @@
 import { callLLM, BLOCK_BATCH_MODEL } from "../llm";
 import { runProfileAgent } from "../agents/profile-agent";
+import { runGlossaryAgent } from "../agents/glossary-agent";
+import { renderGlossaryForPrompt, type Glossary } from "../schemas/glossary";
 import { buildBlockBatchPrompt } from "../prompts/block-batch";
 import { type WorkProfile } from "../schemas/profile";
 import { BatchResponseSchema, AnnotatedBlockSchema, type AnnotatedBlock } from "../schemas/block";
@@ -109,18 +111,59 @@ export async function orchestrate(
   totalTokens += profileRes.tokens;
   send({ type: "profile_complete", profile });
 
-  // ── Pass 2: Block Batches ──
-  // Batch size reverted to 5 after a 3-batch experiment showed 53 batches
-  // (vs 32 at size 5) put total wall-clock above the 20-30 min production
-  // budget for medium-length stories. The per-batch retry below already
-  // handles the loss-recovery role we wanted from the smaller batch.
+  // ── Pass 1.5: Glossary (Track C) ──
+  // Single LLM call extracting canonical English→Korean for proper nouns.
+  // Injected into every block-batch prompt below so per-block calls translate
+  // names consistently and don't independently mistranslate (e.g. "Magi" →
+  // "마귀" instead of "마기"). Skip on very short input (no proper nouns to
+  // standardize, not worth the round-trip).
+  let glossarySection = "";
+  let glossary: Glossary = { entries: [] };
+  if (text.length >= 500) {
+    checkAborted("glossary");
+    send({
+      type: "status",
+      phase: "blocks",
+      message: "고유명사 사전 추출 중...",
+    });
+    const tGloss = Date.now();
+    const glossRes = await runGlossaryAgent({ text, profile, signal });
+    glossary = glossRes.glossary;
+    glossarySection = renderGlossaryForPrompt(glossary);
+    if (!glossRes.parseOk) fallbackCount++;
+    totalTokens += glossRes.tokens;
+    log("glossary", "result", {
+      entries: glossary.entries.length,
+      modelUsed: glossRes.modelUsed,
+      usedFallback: glossRes.usedFallback,
+      sample: glossary.entries.slice(0, 5),
+    });
+    stats.push({
+      step: 1.5,
+      label: `Glossary (${glossary.entries.length} entries)`,
+      tokens: glossRes.tokens,
+      timeS: (Date.now() - tGloss) / 1000,
+      tokS: 0,
+    });
+  }
+
+  // ── Pass 2: Block Batches (parallel dispatch — Track B) ──
+  // Batch size 5; batches dispatched in groups of BATCH_PARALLELISM (default 2)
+  // via Promise.all. Ollama 0.20+ serves concurrent requests in parallel slots,
+  // confirmed ~1.93× speedup at concurrency=2 on DGX Spark.
+  // rollingSummary inside a group is snapshotted from before the group started;
+  // after the group, the LATEST batch's rolling_summary_update propagates.
   const blocks = splitIntoBlocks(text);
   const batches = chunkBlocks(blocks, 5);
-  log("pass2", "blocks_count", `${blocks.length} blocks in ${batches.length} batches`);
+  const PARALLELISM = Math.max(
+    1,
+    parseInt(process.env.BATCH_PARALLELISM || "2", 10),
+  );
+  log("pass2", "blocks_count", `${blocks.length} blocks in ${batches.length} batches (parallelism=${PARALLELISM})`);
   send({
     type: "status",
     phase: "blocks",
-    message: `${blocks.length}개 블록을 ${batches.length}개 배치로 분석`,
+    message: `${blocks.length}개 블록을 ${batches.length}개 배치로 분석 (동시 ${PARALLELISM}개)`,
   });
 
   const profileSummary = summarizeProfileForBatch(profile);
@@ -129,7 +172,12 @@ export async function orchestrate(
   const t2Start = Date.now();
   let step2Tokens = 0;
 
-  for (let i = 0; i < batches.length; i++) {
+  // Process a single batch — used inside Promise.all of each group.
+  const processOneBatch = async (
+    i: number,
+    snapshotRolling: string,
+    snapshotPrev: string,
+  ) => {
     checkAborted(`batch ${i}`);
     send({
       type: "batch_start",
@@ -139,38 +187,28 @@ export async function orchestrate(
     });
     const prompt = buildBlockBatchPrompt({
       profileSummary,
-      rollingSummary,
-      previousTranslations: formatPreviousTranslations(annotated, 2),
+      rollingSummary: snapshotRolling,
+      previousTranslations: snapshotPrev,
       batchIndex: i,
       totalBatches: batches.length,
       blocks: batches[i],
+      glossarySection,
     });
-    // max_predict 4000 retained — Ollama generates until EOS naturally, so
-    // tightening max_predict didn't change wall-clock (a budget-tuning
-    // experiment confirmed this). Real per-batch wall-clock = actual output
-    // tokens / generation speed; the way to shorten it is a faster model
-    // for this stage (BLOCK_BATCH_MODEL env var, e.g. gpt-oss:20b at 56 t/s
-    // vs gemma4 at 28 t/s ≈ 2× speedup on this stage).
     const res = await callLLM(prompt, 4000, signal, BLOCK_BATCH_MODEL);
     log("pass2", `batch_${i}_raw`, res.text);
 
-    // Try full-batch parse first
     let translations: AnnotatedBlock[] = [];
     let rollingUpdate = "";
     let parsed = safeParseLLM(BatchResponseSchema, res.text, `Batch ${i}`);
+    let extraTokens = 0;
     if (parsed.data.translations.length > 0) {
       translations = parsed.data.translations;
       rollingUpdate = parsed.data.rolling_summary_update;
     } else {
-      // Per-batch retry on full parse failure (always-on since v2.5):
-      // attempts to recover the whole batch before falling back to single-block
-      // salvage. Cheap insurance — adds at most one extra LLM call per batch
-      // when the first response is malformed.
       log("pass2", `batch_${i}_retry_after_parse_fail`, "first parse empty, retrying");
       const retryRes = await callLLM(prompt, 4000, signal, BLOCK_BATCH_MODEL);
       log("pass2", `batch_${i}_retry_raw`, retryRes.text);
-      step2Tokens += retryRes.usage.completionTokens;
-      totalTokens += retryRes.usage.completionTokens;
+      extraTokens += retryRes.usage.completionTokens;
       const retryParsed = safeParseLLM(
         BatchResponseSchema,
         retryRes.text,
@@ -179,24 +217,14 @@ export async function orchestrate(
       if (retryParsed.data.translations.length > 0) {
         translations = retryParsed.data.translations;
         rollingUpdate = retryParsed.data.rolling_summary_update;
-        parsed = retryParsed; // updated parse result for ok-tracking below
+        parsed = retryParsed;
       } else {
-        // Fallback: salvage blocks by extracting each block object individually from raw text
         translations = salvageBlocksFromRaw(res.text);
         rollingUpdate = extractRollingUpdate(res.text);
-        log(
-          "pass2",
-          `batch_${i}_salvaged`,
-          `${translations.length} blocks from raw text after retry also empty`,
-        );
+        log("pass2", `batch_${i}_salvaged`, `${translations.length} blocks from raw text after retry also empty`);
       }
     }
 
-    if (!parsed.ok) fallbackCount++;
-
-    // v2 Phase A item 4: Off-batch blockId filter — drop any block whose
-    // blockId is not in this batch's expected set (LLM occasionally hallucinates
-    // adjacent batches' ids when the rolling summary primes it).
     const expectedIds = new Set(batches[i].map((b) => b.blockId));
     const offBatch = translations.filter((t) => t.blockId && !expectedIds.has(t.blockId));
     if (offBatch.length > 0) {
@@ -214,39 +242,72 @@ export async function orchestrate(
       offBatchDropped: offBatch.length,
     });
 
-    // Coverage: record which expected block ids were returned; flag missing/empty ones.
-    const receivedIds = new Set(translations.map((t) => t.blockId).filter(Boolean));
-    totalExpectedBlocks += expectedIds.size;
-    totalReceivedBlocks += receivedIds.size;
-    for (const id of expectedIds) {
-      if (!receivedIds.has(id)) missingBlockIds.push(id);
-    }
-
-    // Attach originalText back (LLM doesn't need to return it)
     const byId = new Map(batches[i].map((b) => [b.blockId, b.text]));
     for (const tr of translations) {
       if (!tr.originalText) tr.originalText = byId.get(tr.blockId) || "";
-      if (!tr.literary_translation?.trim() || !tr.literal_translation?.trim()) {
-        emptyBlockIds.push(tr.blockId);
+    }
+
+    return {
+      i,
+      translations,
+      rollingUpdate,
+      tokens: res.usage.completionTokens + extraTokens,
+      parseOk: parsed.ok,
+      expectedIds,
+    };
+  };
+
+  for (let groupStart = 0; groupStart < batches.length; groupStart += PARALLELISM) {
+    const groupIndices = [];
+    for (let k = 0; k < PARALLELISM && groupStart + k < batches.length; k++) {
+      groupIndices.push(groupStart + k);
+    }
+    // Snapshot context — every batch in the group sees the same context to
+    // preserve determinism within a group.
+    const snapshotRolling = rollingSummary;
+    const snapshotPrev = formatPreviousTranslations(annotated, 2);
+
+    const groupResults = await Promise.all(
+      groupIndices.map((i) => processOneBatch(i, snapshotRolling, snapshotPrev)),
+    );
+
+    // Apply results in batch-index order so annotated stays ordered correctly.
+    for (const r of groupResults) {
+      if (!r.parseOk) fallbackCount++;
+      const receivedIds = new Set(r.translations.map((t) => t.blockId).filter(Boolean));
+      totalExpectedBlocks += r.expectedIds.size;
+      totalReceivedBlocks += receivedIds.size;
+      for (const id of r.expectedIds) {
+        if (!receivedIds.has(id)) missingBlockIds.push(id);
       }
-      annotated.push(tr);
+      for (const tr of r.translations) {
+        if (!tr.literary_translation?.trim() || !tr.literal_translation?.trim()) {
+          emptyBlockIds.push(tr.blockId);
+        }
+        annotated.push(tr);
+      }
+      step2Tokens += r.tokens;
+      totalTokens += r.tokens;
+      send({
+        type: "batch_complete",
+        batchIndex: r.i,
+        blocks: r.translations,
+        rollingSummary,
+      });
     }
-    if (rollingUpdate) {
-      rollingSummary = truncate(rollingUpdate, 1500);
+
+    // Take the latest non-empty rolling_summary_update from this group.
+    const latestUpdate = [...groupResults]
+      .reverse()
+      .find((r) => r.rollingUpdate && r.rollingUpdate.trim());
+    if (latestUpdate) {
+      rollingSummary = truncate(latestUpdate.rollingUpdate, 1500);
     }
-    step2Tokens += res.usage.completionTokens;
-    totalTokens += res.usage.completionTokens;
-    send({
-      type: "batch_complete",
-      batchIndex: i,
-      blocks: translations,
-      rollingSummary,
-    });
   }
   const t2Time = (Date.now() - t2Start) / 1000;
   stats.push({
     step: 2,
-    label: "Block Batches",
+    label: `Block Batches (parallelism=${PARALLELISM})`,
     tokens: step2Tokens,
     timeS: t2Time,
     tokS: Math.round(step2Tokens / Math.max(t2Time, 0.1)),
