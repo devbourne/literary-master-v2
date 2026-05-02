@@ -9,7 +9,7 @@ import { PipelineViewer } from "./pipeline-viewer";
 import { ReportViewer } from "./report-viewer";
 import { ExportButtons } from "./export-buttons";
 
-type Phase = "input" | "picking" | "analyzing" | "complete";
+type Phase = "input" | "picking" | "analyzing" | "complete" | "incomplete";
 
 interface PieceInfo {
   title: string;
@@ -162,7 +162,18 @@ export function AnalysisPage() {
     setPhase("input");
   };
 
-  const currentPhase = state.phase === "done" ? "complete" : phase;
+  const currentPhase: Phase =
+    state.phase === "done"
+      ? "complete"
+      : state.phase === "incomplete"
+        ? "incomplete"
+        : phase;
+
+  const handleRetry = () => {
+    if (!fullText) return;
+    analyze(fullText, sourceUrl ? { sourceUrl } : undefined);
+    setPhase("analyzing");
+  };
 
   return (
     <div style={{ minHeight: "100vh", background: "#fff" }}>
@@ -173,7 +184,11 @@ export function AnalysisPage() {
             {currentPhase === "input" && "텍스트를 입력하세요"}
             {currentPhase === "picking" && `${scanInfo?.title || "작품집"} — 분석할 작품 선택`}
             {currentPhase === "analyzing" && "분석 진행 중..."}
-            {currentPhase === "complete" && "분석 완료"}
+            {currentPhase === "complete" &&
+              (state.warnings.length > 0
+                ? `분석 완료 (경고 ${state.warnings.length}건)`
+                : "분석 완료")}
+            {currentPhase === "incomplete" && "분석 미완료"}
           </p>
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
@@ -243,11 +258,80 @@ export function AnalysisPage() {
 
         {currentPhase === "complete" && (
           <div style={{ maxWidth: 800, margin: "0 auto" }}>
+            {state.warnings.length > 0 && (
+              <div
+                style={{
+                  background: "#fef3c7",
+                  border: "1px solid #fde68a",
+                  borderRadius: 8,
+                  padding: "12px 16px",
+                  marginBottom: 16,
+                  color: "#78350f",
+                  fontSize: 13,
+                }}
+              >
+                <div style={{ fontWeight: 600, marginBottom: 6 }}>
+                  ⚠️ 분석은 완료되었으나 다음 항목을 확인하세요:
+                </div>
+                <ul style={{ margin: 0, paddingLeft: 20 }}>
+                  {state.warnings.map((w, i) => (
+                    <li key={i}>{w}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
             <ReportViewer
               teachingMaterial={state.teachingMaterial}
               legacyMarkdown={state.synthesisMd}
               stats={state.teachingMaterial?.stats ?? null}
             />
+          </div>
+        )}
+
+        {currentPhase === "incomplete" && (
+          <div style={{ maxWidth: 700, margin: "0 auto" }}>
+            <div
+              style={{
+                background: "#fee2e2",
+                border: "1px solid #fecaca",
+                borderRadius: 8,
+                padding: 24,
+                color: "#7f1d1d",
+              }}
+            >
+              <h2 style={{ marginTop: 0, fontSize: 18, fontWeight: 700 }}>
+                ❌ 분석을 완료하지 못했습니다
+              </h2>
+              <p style={{ fontSize: 14 }}>
+                <strong>이유:</strong>{" "}
+                {state.incomplete?.reason === "all_blocks_missing"
+                  ? "모든 블록 분석이 누락되었습니다 (LLM 응답 파싱 실패가 누적된 듯합니다)."
+                  : state.incomplete?.reason === "fatal_error"
+                    ? "복구할 수 없는 오류가 발생했습니다."
+                    : state.incomplete?.reason ?? "알 수 없는 사유"}
+              </p>
+              <p style={{ fontSize: 13, color: "#991b1b" }}>
+                저장된 결과 없음. 모델 또는 입력에 문제가 있을 수 있습니다.
+              </p>
+              {state.incomplete?.retryable && (
+                <button
+                  onClick={handleRetry}
+                  style={{
+                    marginTop: 12,
+                    padding: "8px 16px",
+                    fontSize: 14,
+                    fontWeight: 600,
+                    background: "#dc2626",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: 6,
+                    cursor: "pointer",
+                  }}
+                >
+                  다시 시도
+                </button>
+              )}
+            </div>
           </div>
         )}
       </main>

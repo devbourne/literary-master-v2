@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import type { PipelinePhase, WorkProfile, AnnotatedBlock } from "@/lib/types";
 
 interface Props {
-  phase: PipelinePhase | "error";
+  phase: PipelinePhase | "error" | "incomplete";
   statusMessage: string;
   profile: WorkProfile | null;
   blocks: AnnotatedBlock[];

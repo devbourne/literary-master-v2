@@ -10,7 +10,7 @@ import type {
 } from "@/lib/types";
 
 interface AnalysisState {
-  phase: PipelinePhase | "error";
+  phase: PipelinePhase | "error" | "incomplete";
   statusMessage: string;
   profile: WorkProfile | null;
   blocks: AnnotatedBlock[];
@@ -27,6 +27,8 @@ interface AnalysisState {
   teachingMaterial: TeachingMaterial | null;
   storageId: string | null;
   warnings: string[];
+  /** v2 Phase A: set when the Finalization Gate emitted "incomplete". */
+  incomplete: { reason: string; retryable: boolean } | null;
   error: string | null;
 }
 
@@ -54,6 +56,7 @@ type Action =
       storageId: string;
     }
   | { type: "ERROR"; message: string }
+  | { type: "INCOMPLETE"; reason: string; retryable: boolean }
   | { type: "RESET" };
 
 const initialState: AnalysisState = {
@@ -68,6 +71,7 @@ const initialState: AnalysisState = {
   teachingMaterial: null,
   storageId: null,
   warnings: [],
+  incomplete: null,
   error: null,
 };
 
@@ -122,6 +126,12 @@ function reducer(state: AnalysisState, action: Action): AnalysisState {
       };
     case "ERROR":
       return { ...state, phase: "error", error: action.message };
+    case "INCOMPLETE":
+      return {
+        ...state,
+        phase: "incomplete",
+        incomplete: { reason: action.reason, retryable: action.retryable },
+      };
     case "RESET":
       return { ...initialState };
     default:
@@ -279,6 +289,13 @@ export function useAnalysis() {
                 }
                 break;
               }
+              case "incomplete":
+                dispatch({
+                  type: "INCOMPLETE",
+                  reason: event.reason,
+                  retryable: event.retryable,
+                });
+                break;
               case "error":
                 dispatch({ type: "ERROR", message: event.message });
                 break;
