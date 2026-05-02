@@ -71,6 +71,10 @@ export async function POST(req: Request) {
 
   counter.inflight++;
   const encoder = new TextEncoder();
+  // v2 Phase A item 2: cancel propagation. ReadableStream.cancel() (fired when
+  // the client navigates away or aborts the fetch) triggers this controller,
+  // which is threaded through orchestrate → llm.ts fetch calls.
+  const cancelController = new AbortController();
 
   const stream = new ReadableStream({
     async start(controller) {
@@ -83,9 +87,16 @@ export async function POST(req: Request) {
       };
 
       try {
-        await orchestrate(text, send, sources);
+        await orchestrate(text, send, sources, cancelController.signal);
       } catch (e) {
-        send({ type: "error", message: e instanceof Error ? e.message : String(e) });
+        if (
+          cancelController.signal.aborted &&
+          (e as { name?: string })?.name === "AbortError"
+        ) {
+          // Client-initiated cancel; no error event needed (stream already closing).
+        } else {
+          send({ type: "error", message: e instanceof Error ? e.message : String(e) });
+        }
       } finally {
         counter.inflight = Math.max(0, counter.inflight - 1);
         try {
@@ -94,6 +105,9 @@ export async function POST(req: Request) {
           /* already closed */
         }
       }
+    },
+    cancel(reason) {
+      cancelController.abort(reason);
     },
   });
 

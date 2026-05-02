@@ -81,6 +81,11 @@ export const AnnotatedBlockSchema = z.object({
   revised_literary_translation: z.string().optional(),
   revised_literal_translation: z.string().optional(),
   revision_reason: z.string().optional(),
+  // v2 Phase A item 3a (Coverage Repair Agent): set when a block was filled in
+  // by the repair agent rather than the normal batch path; partial=true marks
+  // blocks the agent could not fully recover.
+  partial: z.boolean().optional(),
+  repair_reason: z.string().optional(),
 }).passthrough();
 
 export const BatchResponseSchema = z.object({

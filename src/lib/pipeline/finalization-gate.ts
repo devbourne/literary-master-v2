@@ -20,6 +20,8 @@ export interface FinalizationSignals {
   totalReceivedBlocks: number;
   /** Number of blocks where literary or literal text is empty. */
   emptyBlockCount: number;
+  /** Blocks that the Coverage Repair Agent marked partial (could not fully recover). */
+  partialBlockCount: number;
   verifyStatus: VerifyStatus;
   verifyIterations: number;
   /** True if WorkProfile parsed from LLM cleanly (false → fallback used). */
@@ -68,6 +70,9 @@ export function evaluateFinalizationGate(
   }
   if (signals.emptyBlockCount > 0) {
     warnings.push(`빈 번역 블록 ${signals.emptyBlockCount}개`);
+  }
+  if (signals.partialBlockCount > 0) {
+    warnings.push(`복구 불완전 블록 ${signals.partialBlockCount}개`);
   }
   if (!signals.profileParseOk) {
     warnings.push("Profile parse 실패 (기본값/부분복구 사용)");

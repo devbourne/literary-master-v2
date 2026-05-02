@@ -18,6 +18,10 @@ import {
 import { assemble } from "./assemble";
 import { saveTeachingMaterial } from "./storage";
 import { runVerifyAgent } from "../agents/verify-agent";
+import {
+  runCoverageRepairAgent,
+  type CoverageRepairTarget,
+} from "../agents/coverage-repair-agent";
 import { evaluateFinalizationGate } from "./finalization-gate";
 import type { PipelineEvent } from "../types";
 import type { PipelineStats, Sources, StepStat } from "../schemas/teaching-material";
@@ -63,7 +67,13 @@ export async function orchestrate(
   text: string,
   send: Send,
   sourceInput?: SourceInput,
+  signal?: AbortSignal,
 ): Promise<void> {
+  function checkAborted(stage: string): void {
+    if (signal?.aborted) {
+      throw new DOMException(`orchestrate aborted at ${stage}`, "AbortError");
+    }
+  }
   const t0 = Date.now();
   const stats: StepStat[] = [];
   let totalTokens = 0;
@@ -79,7 +89,7 @@ export async function orchestrate(
   send({ type: "status", phase: "profile", message: "작품 프로파일 구축 중..." });
   log("pass1", "input", `${text.length} chars`);
   const t1 = Date.now();
-  const profileLLM = await callLLM(buildProfilePrompt(text), 5000);
+  const profileLLM = await callLLM(buildProfilePrompt(text), 5000, signal);
   const profileTime = (Date.now() - t1) / 1000;
   log("pass1", "raw", profileLLM.text);
   const profileParse = safeParseLLM(WorkProfileSchema, profileLLM.text, "Profile");
@@ -114,6 +124,7 @@ export async function orchestrate(
   let step2Tokens = 0;
 
   for (let i = 0; i < batches.length; i++) {
+    checkAborted(`batch ${i}`);
     send({
       type: "batch_start",
       batchIndex: i,
@@ -128,7 +139,7 @@ export async function orchestrate(
       totalBatches: batches.length,
       blocks: batches[i],
     });
-    const res = await callLLM(prompt, 4000);
+    const res = await callLLM(prompt, 4000, signal);
     log("pass2", `batch_${i}_raw`, res.text);
 
     // Try full-batch parse first
@@ -147,14 +158,27 @@ export async function orchestrate(
 
     if (!parsed.ok) fallbackCount++;
 
+    // v2 Phase A item 4: Off-batch blockId filter — drop any block whose
+    // blockId is not in this batch's expected set (LLM occasionally hallucinates
+    // adjacent batches' ids when the rolling summary primes it).
+    const expectedIds = new Set(batches[i].map((b) => b.blockId));
+    const offBatch = translations.filter((t) => t.blockId && !expectedIds.has(t.blockId));
+    if (offBatch.length > 0) {
+      log("pass2", `batch_${i}_off_batch_dropped`, {
+        count: offBatch.length,
+        ids: offBatch.map((t) => t.blockId),
+      });
+      translations = translations.filter((t) => !t.blockId || expectedIds.has(t.blockId));
+    }
+
     log("pass2", `batch_${i}_parsed`, {
       ok: parsed.ok,
       translations: translations.length,
       expected: batches[i].length,
+      offBatchDropped: offBatch.length,
     });
 
     // Coverage: record which expected block ids were returned; flag missing/empty ones.
-    const expectedIds = new Set(batches[i].map((b) => b.blockId));
     const receivedIds = new Set(translations.map((t) => t.blockId).filter(Boolean));
     totalExpectedBlocks += expectedIds.size;
     totalReceivedBlocks += receivedIds.size;
@@ -192,6 +216,73 @@ export async function orchestrate(
     tokS: Math.round(step2Tokens / Math.max(t2Time, 0.1)),
   });
 
+  // ── Pass 2.5: Coverage Repair Agent (v2 Phase A item 3a) ──
+  // Targets blocks that were either (a) missing entirely from batch responses
+  // or (b) returned with empty literary/literal text. The agent issues a single-block
+  // LLM call per target with prev/next context. Up to 2 retries each.
+  // After repair, "annotated" is rebuilt in source-of-truth order via the agent.
+  const repairTargets: CoverageRepairTarget[] = [];
+  const seenForRepair = new Set<string>();
+  for (const id of missingBlockIds) {
+    if (!seenForRepair.has(id)) {
+      seenForRepair.add(id);
+      repairTargets.push({ blockId: id, reason: "missing" });
+    }
+  }
+  for (const id of emptyBlockIds) {
+    if (!seenForRepair.has(id)) {
+      seenForRepair.add(id);
+      repairTargets.push({ blockId: id, reason: "empty" });
+    }
+  }
+
+  if (repairTargets.length > 0) {
+    checkAborted("coverage_repair");
+    send({
+      type: "status",
+      phase: "blocks",
+      message: `누락·빈 블록 ${repairTargets.length}개 복구 중`,
+    });
+    const tRepair = Date.now();
+    const repairRes = await runCoverageRepairAgent(
+      {
+        targets: repairTargets,
+        allBlocks: blocks,
+        annotated,
+        profileSummary,
+        signal,
+      },
+      (step) => {
+        send({
+          type: "agent_step",
+          agent: "coverage_repair",
+          iter: step.attempt,
+          action: step.status,
+          status: step.reason,
+          issueCount: undefined,
+          contextChars: undefined,
+        });
+      },
+    );
+    log("repair", "outcomes", {
+      total: repairRes.outcomes.length,
+      repaired: repairRes.outcomes.filter((o) => o.result === "repaired").length,
+      partial: repairRes.outcomes.filter((o) => o.result === "partial").length,
+      detail: repairRes.outcomes,
+    });
+    // Replace annotated with the agent's source-of-truth-ordered, repair-augmented array.
+    annotated.length = 0;
+    annotated.push(...repairRes.annotated);
+    totalTokens += repairRes.tokens;
+    stats.push({
+      step: 2.5,
+      label: `Coverage Repair (${repairRes.outcomes.length} target${repairRes.outcomes.length === 1 ? "" : "s"})`,
+      tokens: repairRes.tokens,
+      timeS: (Date.now() - tRepair) / 1000,
+      tokS: 0,
+    });
+  }
+
   // ── Pass 3: Revise Flagged ──
   const flagged = annotated.filter((b) => b.annotations.flag_for_revision);
   log("pass3", "flagged_count", `${flagged.length} of ${annotated.length}`);
@@ -204,6 +295,7 @@ export async function orchestrate(
     const t3Start = Date.now();
     let step3Tokens = 0;
     for (const b of flagged) {
+      checkAborted("revise");
       const idx = annotated.findIndex((x) => x.blockId === b.blockId);
       const prompt = buildRevisePrompt({
         profileSummary,
@@ -222,7 +314,7 @@ export async function orchestrate(
           after: annotated[idx + 1]?.literary_translation,
         },
       });
-      const res = await callLLM(prompt, 1500);
+      const res = await callLLM(prompt, 1500, signal);
       try {
         const cleaned = res.text.trim().replace(/^```\w*\s*\n?/, "").replace(/\n?```\s*$/, "");
         const obj = JSON.parse(cleaned);
@@ -257,7 +349,8 @@ export async function orchestrate(
   let synthTokens = 0;
   let lastProgressTick = 0;
   const tSynthStart = Date.now();
-  const gen = streamLLMChunks(synthPrompt, 6000);
+  checkAborted("synthesis");
+  const gen = streamLLMChunks(synthPrompt, 6000, signal);
   while (true) {
     const { done, value } = await gen.next();
     if (done) {
@@ -288,10 +381,12 @@ export async function orchestrate(
   if (!synthParse.ok) fallbackCount++;
   const synthesis: Synthesis = synthParse.data;
   log("synthesis", "parsed_ok", synthParse.ok ? "YES" : "NO (salvaged)");
+  let synthesisForOutput: Synthesis = synthesis;
   const synthesisPlain = synthesisToPlainText(synthesis);
 
-  // ── Verify (agentic) ──
+  // ── Verify (agentic, v2 with CORRECTION-apply loop) ──
   send({ type: "status", phase: "verify", message: "원문 대조 검증 중..." });
+  checkAborted("verify");
   const verifyRes = await runVerifyAgent(
     {
       fullText: text,
@@ -300,6 +395,11 @@ export async function orchestrate(
       initialEndingChars: 1500,
       expandedEndingChars: 3000,
       maxIterations: 3,
+      signal,
+      // v2: pass synthesis + a renderer so the agent can apply CORRECTION fixes
+      // to the JSON in-place and re-verify.
+      synthesis,
+      renderReport: (s) => synthesisToPlainText(s),
     },
     (step) => {
       send({
@@ -314,10 +414,15 @@ export async function orchestrate(
     },
   );
   totalTokens += verifyRes.tokens;
+  if (verifyRes.finalSynthesis) {
+    synthesisForOutput = verifyRes.finalSynthesis;
+  }
   log("verify", "agent_result", {
     status: verifyRes.status,
     iterations: verifyRes.iterations,
     issues: verifyRes.issues.length,
+    correctionsApplied: verifyRes.correctionsApplied.length,
+    correctionsApplyDetail: verifyRes.correctionsApplied,
   });
   stats.push({
     step: 5,
@@ -364,7 +469,7 @@ export async function orchestrate(
   const teachingMaterial = assemble({
     profile,
     blocks: annotated,
-    synthesis,
+    synthesis: synthesisForOutput,
     synthesisMd: "",
     verify: {
       status: verifyRes.status,
@@ -378,17 +483,25 @@ export async function orchestrate(
     sources,
   });
 
-  // Compute signals for the Finalization Gate (v2 §3.8)
-  const coverageRatio =
-    totalExpectedBlocks > 0 ? totalReceivedBlocks / totalExpectedBlocks : 1;
-  const uniqueMissing = Array.from(new Set(missingBlockIds));
-  const uniqueEmpty = Array.from(new Set(emptyBlockIds));
+  // Compute signals for the Finalization Gate (v2 §3.8) — recompute coverage
+  // from the FINAL annotated array so coverage repair is reflected.
+  const finalReceivedIds = new Set(
+    annotated.map((b) => b.blockId).filter(Boolean),
+  );
+  const finalCoverageRatio =
+    blocks.length > 0 ? finalReceivedIds.size / blocks.length : 1;
+  const finalEmptyCount = annotated.filter(
+    (b) =>
+      !b.literary_translation?.trim() || !b.literal_translation?.trim(),
+  ).length;
+  const finalPartialCount = annotated.filter((b) => b.partial === true).length;
 
   const decision = evaluateFinalizationGate({
-    coverageRatio,
-    totalExpectedBlocks,
-    totalReceivedBlocks,
-    emptyBlockCount: uniqueEmpty.length,
+    coverageRatio: finalCoverageRatio,
+    totalExpectedBlocks: blocks.length,
+    totalReceivedBlocks: finalReceivedIds.size,
+    emptyBlockCount: finalEmptyCount,
+    partialBlockCount: finalPartialCount,
     verifyStatus: verifyRes.status,
     verifyIterations: verifyRes.iterations,
     profileParseOk: profileParse.ok,
@@ -397,10 +510,10 @@ export async function orchestrate(
   });
 
   log("assemble", "coverage", {
-    expected: totalExpectedBlocks,
-    received: totalReceivedBlocks,
-    missing: uniqueMissing,
-    empty: uniqueEmpty,
+    expected: blocks.length,
+    received: finalReceivedIds.size,
+    empty: finalEmptyCount,
+    partial: finalPartialCount,
     fallbackCount,
     gate: decision,
   });

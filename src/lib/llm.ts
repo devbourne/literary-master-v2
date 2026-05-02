@@ -7,8 +7,19 @@ export interface LLMUsage {
   completionTokens: number;
 }
 
+// v2 Phase A item 2: combine the per-call timeout with the caller's signal
+// (e.g. ReadableStream cancel propagation) so either source aborts the fetch.
+function combineSignals(external: AbortSignal | undefined): AbortSignal {
+  const timeout = AbortSignal.timeout(300_000);
+  return external ? AbortSignal.any([timeout, external]) : timeout;
+}
+
 // Non-streaming call via Ollama (used for Survey + Verify — JSON integrity)
-export async function callLLM(prompt: string, maxTokens = 2000): Promise<{ text: string; usage: LLMUsage }> {
+export async function callLLM(
+  prompt: string,
+  maxTokens = 2000,
+  signal?: AbortSignal,
+): Promise<{ text: string; usage: LLMUsage }> {
   const res = await fetch(OLLAMA_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -23,7 +34,7 @@ export async function callLLM(prompt: string, maxTokens = 2000): Promise<{ text:
         temperature: 0.3,
       },
     }),
-    signal: AbortSignal.timeout(300_000),
+    signal: combineSignals(signal),
   });
 
   if (!res.ok) {
@@ -52,7 +63,11 @@ export async function callLLM(prompt: string, maxTokens = 2000): Promise<{ text:
 }
 
 // Streaming call via Ollama (used for Chunk Analysis + Synthesis — real-time UI)
-export async function* streamLLMChunks(prompt: string, maxTokens = 2000): AsyncGenerator<string, LLMUsage> {
+export async function* streamLLMChunks(
+  prompt: string,
+  maxTokens = 2000,
+  signal?: AbortSignal,
+): AsyncGenerator<string, LLMUsage> {
   const res = await fetch(OLLAMA_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -67,7 +82,7 @@ export async function* streamLLMChunks(prompt: string, maxTokens = 2000): AsyncG
         temperature: 0.3,
       },
     }),
-    signal: AbortSignal.timeout(300_000),
+    signal: combineSignals(signal),
   });
 
   if (!res.ok) {
