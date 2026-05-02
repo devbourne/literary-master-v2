@@ -1,4 +1,4 @@
-import { callLLM } from "../llm";
+import { callLLM, ADVERSARIAL_VERIFY_MODEL } from "../llm";
 import { buildVerifyPrompt } from "../prompts/verify";
 import { buildSynthesisFixPrompt } from "../prompts/synthesis-fix";
 import { safeParseLLM } from "../schemas/safe-parse";
@@ -40,11 +40,23 @@ export interface CorrectionApplied {
   failureReason?: string;
 }
 
+export interface AdversarialCheck {
+  /** Model that ran the cross-check. */
+  model: string;
+  /** Status returned by the adversarial model. */
+  status: VerificationStatus;
+  /** Issue count from the adversarial pass. */
+  issueCount: number;
+  /** True if the original status was upgraded based on adversarial agreement. */
+  upgradedToVerified: boolean;
+}
+
 export interface VerifyAgentResult {
   /**
    * Final disposition. With Verify v2 inputs (synthesis + renderReport):
    *  - "VERIFIED"            — succeeded on first iteration, no corrections
    *  - "VERIFIED"            — succeeded after corrections (correctionsApplied non-empty)
+   *  - "VERIFIED"            — upgraded by Phase F-2 adversarial cross-check
    *  - "CORRECTION"          — exhausted maxIterations, residual issues remain
    *  - "UNCERTAIN"           — model uncertain, no productive correction available
    * Without v2 inputs, falls back to the original status semantics.
@@ -61,6 +73,8 @@ export interface VerifyAgentResult {
   correctionsApplied: CorrectionApplied[];
   /** v2: synthesis after corrections (returned if any apply succeeded). */
   finalSynthesis?: Synthesis;
+  /** Phase F-2: adversarial cross-check disposition (only set when run). */
+  adversarial?: AdversarialCheck;
 }
 
 export type AgentStep = {
@@ -241,6 +255,47 @@ export async function runVerifyAgent(
     break;
   }
 
+  // Phase F-2: Adversarial cross-check. When the main loop ends UNCERTAIN
+  // and an adversarial model is configured, run one final verify pass with
+  // the adversarial model on the same (working) report. If the adversarial
+  // says VERIFIED, upgrade. Other outcomes are recorded but don't change
+  // status — the agreement signal only flows in the corroborating direction.
+  let adversarial: AdversarialCheck | undefined;
+  if (finalStatus === "UNCERTAIN" && ADVERSARIAL_VERIFY_MODEL) {
+    if (!input.signal?.aborted) {
+      const advRes = await callLLM(
+        buildVerifyPrompt({
+          ending,
+          twist: input.twistJson,
+          report: workingReport,
+        }),
+        1500,
+        input.signal,
+        ADVERSARIAL_VERIFY_MODEL,
+      );
+      tokens += advRes.usage.completionTokens;
+      raw.push(advRes.text);
+      const advParsed = safeParseLLM(
+        VerificationSchema,
+        advRes.text,
+        `VerifyAgent adversarial (${ADVERSARIAL_VERIFY_MODEL})`,
+      );
+      const advData = advParsed.data;
+      const upgraded = advData.status === "VERIFIED";
+      adversarial = {
+        model: ADVERSARIAL_VERIFY_MODEL,
+        status: advData.status,
+        issueCount: (advData.issues ?? []).length,
+        upgradedToVerified: upgraded,
+      };
+      if (upgraded) {
+        finalStatus = "VERIFIED";
+        const note = `Cross-validated by ${ADVERSARIAL_VERIFY_MODEL}`;
+        lastNote = lastNote ? `${lastNote}\n${note}` : note;
+      }
+    }
+  }
+
   onStep?.({
     iter: iterations,
     action: "finalize",
@@ -260,5 +315,6 @@ export async function runVerifyAgent(
     finalSynthesis: correctionsApplied.some((c) => c.applied)
       ? workingSynthesis
       : undefined,
+    adversarial,
   };
 }

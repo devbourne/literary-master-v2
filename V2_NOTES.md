@@ -35,7 +35,16 @@ cd /home/code/literary-master-v2 && npm run dev   # → localhost:3001
 | C. 품질 재배치 | Quality Agent (Revise reversal), safeParseLLM 일관화 | pending |
 | D. UX/스캔 정리 | Segmentation Agent, server-side extract | pending |
 | E. Productionization | Storage auth, multi-process | deferred (matches v1 Phase 3) |
-| **F. Multi-model augmentation** (post-D) | JSON Fallback (Qwen3), Adversarial Verify (gpt-oss:120b) | future, see model-test-on-dgx |
+| **F. Multi-model augmentation** | JSON Fallback (Qwen3), Adversarial Verify (gpt-oss:120b) | ✅ implemented; opt-in via env vars |
+
+## Phase F env vars (multi-model augmentation)
+
+Both default to **off** so v2 behavior is identical to single-model gemma4 unless explicitly enabled.
+
+| Var | Effect | Recommended value |
+|---|---|---|
+| `FALLBACK_MODEL` | When the default model's output fails schema parse at a *structural integrity* point (Profile merge, Synthesis merge), retry the same prompt with this model. | `qwen3:30b-a3b-instruct-2507-q4_K_M` (JSON-robustness keeper from `model-test-on-dgx`) |
+| `ADVERSARIAL_VERIFY_MODEL` | After Verify v2 ends `UNCERTAIN`, run one final cross-check pass with this model. If it returns `VERIFIED`, upgrade the result with a `Cross-validated by <model>` note. Other outcomes are recorded but don't change status. | `gpt-oss:120b` (DGX Spark only — 65 GB) |
 
 ## Model decisions (carried from v1)
 

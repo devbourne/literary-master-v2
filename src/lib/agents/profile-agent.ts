@@ -10,6 +10,7 @@
 // in the merge step (see profile-merge.ts).
 
 import { callLLM } from "../llm";
+import { callLLMWithJsonFallback } from "../llm-fallback";
 import { buildProfilePrompt } from "../prompts/profile";
 import { buildProfilePartialPrompt } from "../prompts/profile-partial";
 import { buildProfileMergePrompt } from "../prompts/profile-merge";
@@ -199,36 +200,37 @@ async function runPartialThenMerge(
     });
   }
 
-  // Merge call
+  // Merge call — wrapped in JSON fallback (Phase F-1) since structural
+  // integrity here is critical: a malformed merge propagates a junk profile
+  // into every downstream stage.
   if (input.signal?.aborted) {
     throw new DOMException("profile-agent aborted before merge", "AbortError");
   }
-  const mergeRes = await callLLM(
+  const merged = await callLLMWithJsonFallback(
     buildProfileMergePrompt({
       partialProfilesJson: `[${partialJsons.join(",\n")}]`,
       partialCount: partialJsons.length,
       strategy,
       totalChars,
     }),
-    6000,
-    input.signal,
-  );
-  tokens += mergeRes.usage.completionTokens;
-  const mergedParse = safeParseLLM(
     WorkProfileSchema,
-    mergeRes.text,
-    "Profile merge",
+    {
+      maxTokens: 6000,
+      signal: input.signal,
+      label: "Profile merge",
+    },
   );
+  tokens += merged.tokens;
   steps.push({
     kind: "merge",
-    label: "merge",
-    parseOk: mergedParse.ok,
-    tokens: mergeRes.usage.completionTokens,
+    label: merged.usedFallback ? `merge (fallback: ${merged.modelUsed})` : "merge",
+    parseOk: merged.ok,
+    tokens: merged.tokens,
   });
 
   return {
-    profile: mergedParse.data,
-    parseOk: mergedParse.ok,
+    profile: merged.data,
+    parseOk: merged.ok,
     strategy,
     partialCount: windows.length,
     tokens,

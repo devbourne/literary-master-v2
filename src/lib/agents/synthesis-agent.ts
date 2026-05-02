@@ -10,6 +10,7 @@
 // in synthesis-merge.ts.
 
 import { callLLM, streamLLMChunks } from "../llm";
+import { callLLMWithJsonFallback } from "../llm-fallback";
 import { buildSynthesisPromptV2 } from "../prompts/synthesis";
 import { buildSynthesisPartialPrompt } from "../prompts/synthesis-partial";
 import { buildSynthesisMergePrompt } from "../prompts/synthesis-merge";
@@ -169,22 +170,27 @@ async function runChunkMerge(
   if (input.signal?.aborted) {
     throw new DOMException("synthesis-agent aborted before merge", "AbortError");
   }
-  const mergeRes = await callLLM(
+  // JSON fallback (Phase F-1): synthesis merge is a structural integrity
+  // point — a malformed merge breaks export, PDF, and Verify v2's report.
+  const merged = await callLLMWithJsonFallback(
     buildSynthesisMergePrompt({
       profile: input.profile,
       partialsJson: `[${partialJsons.join(",\n")}]`,
       partialCount: partialJsons.length,
     }),
-    7000,
-    input.signal,
+    SynthesisSchema,
+    {
+      maxTokens: 7000,
+      signal: input.signal,
+      label: "Synthesis merge",
+    },
   );
-  tokens += mergeRes.usage.completionTokens;
-  const merged = safeParseLLM(SynthesisSchema, mergeRes.text, "Synthesis merge");
+  tokens += merged.tokens;
   steps.push({
     kind: "merge",
-    label: "merge",
+    label: merged.usedFallback ? `merge (fallback: ${merged.modelUsed})` : "merge",
     parseOk: merged.ok,
-    tokens: mergeRes.usage.completionTokens,
+    tokens: merged.tokens,
   });
 
   return {

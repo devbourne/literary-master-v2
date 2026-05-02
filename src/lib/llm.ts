@@ -1,6 +1,14 @@
 const OLLAMA_URL = process.env.OLLAMA_URL || "http://localhost:11434/api/chat";
-const MODEL = process.env.ANALYSIS_MODEL || "bjoernb/gemma4-26b-fast";
+const DEFAULT_MODEL =
+  process.env.ANALYSIS_MODEL || "bjoernb/gemma4-26b-fast";
 const NUM_CTX = parseInt(process.env.OLLAMA_CTX || "32768");
+
+export const MODEL = DEFAULT_MODEL;
+/** v2 Phase F-1: model used by callLLMWithJsonFallback when default's output fails schema parse. */
+export const FALLBACK_MODEL: string | undefined = process.env.FALLBACK_MODEL;
+/** v2 Phase F-2: model used for adversarial cross-check after Verify v2 returns UNCERTAIN. */
+export const ADVERSARIAL_VERIFY_MODEL: string | undefined =
+  process.env.ADVERSARIAL_VERIFY_MODEL;
 
 export interface LLMUsage {
   promptTokens: number;
@@ -19,12 +27,13 @@ export async function callLLM(
   prompt: string,
   maxTokens = 2000,
   signal?: AbortSignal,
+  modelOverride?: string,
 ): Promise<{ text: string; usage: LLMUsage }> {
   const res = await fetch(OLLAMA_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: MODEL,
+      model: modelOverride ?? DEFAULT_MODEL,
       messages: [{ role: "user", content: prompt }],
       stream: false,
       think: false,
@@ -67,12 +76,13 @@ export async function* streamLLMChunks(
   prompt: string,
   maxTokens = 2000,
   signal?: AbortSignal,
+  modelOverride?: string,
 ): AsyncGenerator<string, LLMUsage> {
   const res = await fetch(OLLAMA_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: MODEL,
+      model: modelOverride ?? DEFAULT_MODEL,
       messages: [{ role: "user", content: prompt }],
       stream: true,
       think: false,
