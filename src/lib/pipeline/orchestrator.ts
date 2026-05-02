@@ -22,6 +22,7 @@ import {
 } from "../agents/coverage-repair-agent";
 import { runSynthesisAgent } from "../agents/synthesis-agent";
 import { runQualityAgent } from "../agents/quality-agent";
+import { runKoreanProofreaderAgent } from "../agents/korean-proofreader-agent";
 import { evaluateFinalizationGate } from "./finalization-gate";
 import type { PipelineEvent } from "../types";
 import type { PipelineStats, Sources, StepStat } from "../schemas/teaching-material";
@@ -366,7 +367,50 @@ export async function orchestrate(
     steps: synthRes.steps,
   });
   let synthesisForOutput: Synthesis = synthesis;
-  const synthesisPlain = synthesisToPlainText(synthesis);
+
+  // ── Phase 3: Korean Proofreader (post-Synthesis, pre-Verify) ──
+  // Targets the character-level Korean glitches gemma4 produces in long
+  // prose. Operates only when output text length suggests glitches are
+  // possible (>1500 chars in any single Korean field) — short outputs are
+  // historically clean and don't need the round-trip.
+  const totalKoreanChars =
+    (synthesis.overview_essay_ko?.length ?? 0) +
+    (synthesis.plot_reading_ko?.length ?? 0) +
+    (synthesis.style_essay_ko?.length ?? 0);
+  if (totalKoreanChars >= 1500) {
+    checkAborted("korean_proofread");
+    send({
+      type: "status",
+      phase: "synthesis",
+      message: "한국어 교정 중...",
+    });
+    const proof = await runKoreanProofreaderAgent({
+      synthesis: synthesisForOutput,
+      signal,
+    });
+    synthesisForOutput = proof.synthesis;
+    totalTokens += proof.tokens;
+    log("korean_proofread", "outcomes", {
+      modelUsed: proof.modelUsed,
+      changedFields: proof.changedFields,
+      total: proof.outcomes.length,
+      detail: proof.outcomes,
+    });
+    stats.push({
+      step: 4.5,
+      label: `Korean Proofread (${proof.changedFields}/${proof.outcomes.length} fields fixed)`,
+      tokens: proof.tokens,
+      timeS: proof.timeS,
+      tokS: 0,
+    });
+  } else {
+    log("korean_proofread", "skipped", {
+      reason: "totalKoreanChars below threshold",
+      totalKoreanChars,
+    });
+  }
+
+  const synthesisPlain = synthesisToPlainText(synthesisForOutput);
 
   // ── Verify (agentic, v2 with CORRECTION-apply loop) ──
   send({ type: "status", phase: "verify", message: "원문 대조 검증 중..." });
@@ -380,9 +424,9 @@ export async function orchestrate(
       expandedEndingChars: 3000,
       maxIterations: 3,
       signal,
-      // v2: pass synthesis + a renderer so the agent can apply CORRECTION fixes
-      // to the JSON in-place and re-verify.
-      synthesis,
+      // v2: pass the proofread synthesis + a renderer so the agent can apply
+      // CORRECTION fixes to the JSON in-place and re-verify.
+      synthesis: synthesisForOutput,
       renderReport: (s) => synthesisToPlainText(s),
     },
     (step) => {
