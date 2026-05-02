@@ -1,4 +1,4 @@
-import { callLLM } from "../llm";
+import { callLLM, BLOCK_BATCH_MODEL } from "../llm";
 import { runProfileAgent } from "../agents/profile-agent";
 import { buildBlockBatchPrompt } from "../prompts/block-batch";
 import { type WorkProfile } from "../schemas/profile";
@@ -145,11 +145,13 @@ export async function orchestrate(
       totalBatches: batches.length,
       blocks: batches[i],
     });
-    // max_predict tightened from 4000 → 2200. Each block emits ~400-500 tokens
-    // of structured JSON; 5 blocks × 500 = 2500. Old 4000 was 60% headroom we
-    // never used and was the dominant wall-clock cost (per-batch time scales
-    // with max_predict more than with actual output size).
-    const res = await callLLM(prompt, 2200, signal);
+    // max_predict 4000 retained — Ollama generates until EOS naturally, so
+    // tightening max_predict didn't change wall-clock (a budget-tuning
+    // experiment confirmed this). Real per-batch wall-clock = actual output
+    // tokens / generation speed; the way to shorten it is a faster model
+    // for this stage (BLOCK_BATCH_MODEL env var, e.g. gpt-oss:20b at 56 t/s
+    // vs gemma4 at 28 t/s ≈ 2× speedup on this stage).
+    const res = await callLLM(prompt, 4000, signal, BLOCK_BATCH_MODEL);
     log("pass2", `batch_${i}_raw`, res.text);
 
     // Try full-batch parse first
@@ -165,7 +167,7 @@ export async function orchestrate(
       // salvage. Cheap insurance — adds at most one extra LLM call per batch
       // when the first response is malformed.
       log("pass2", `batch_${i}_retry_after_parse_fail`, "first parse empty, retrying");
-      const retryRes = await callLLM(prompt, 2200, signal);
+      const retryRes = await callLLM(prompt, 4000, signal, BLOCK_BATCH_MODEL);
       log("pass2", `batch_${i}_retry_raw`, retryRes.text);
       step2Tokens += retryRes.usage.completionTokens;
       totalTokens += retryRes.usage.completionTokens;

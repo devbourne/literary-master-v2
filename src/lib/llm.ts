@@ -9,6 +9,12 @@ export const FALLBACK_MODEL: string | undefined = process.env.FALLBACK_MODEL;
 /** v2 Phase F-2: model used for adversarial cross-check after Verify v2 returns UNCERTAIN. */
 export const ADVERSARIAL_VERIFY_MODEL: string | undefined =
   process.env.ADVERSARIAL_VERIFY_MODEL;
+/** v2.5 budget tuning: faster model just for the Pass 2 block-batch stage,
+ *  the dominant wall-clock cost. Block translation is short structured
+ *  English-to-Korean; a 2× faster model brings full short stories under the
+ *  20-30 min production budget. Default model still handles Profile,
+ *  Synthesis, Verify (where its Korean depth and brand-creation matter). */
+export const BLOCK_BATCH_MODEL: string | undefined = process.env.BLOCK_BATCH_MODEL;
 
 export interface LLMUsage {
   promptTokens: number;
