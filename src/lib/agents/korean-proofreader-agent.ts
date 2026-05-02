@@ -22,6 +22,7 @@ import type {
   CharacterReading,
   SymbolReading,
 } from "../schemas/synthesis";
+import type { AnnotatedBlock } from "../schemas/block";
 
 /** Maximum acceptable per-field character diff ratio. Above this we discard the proposed fix. */
 const MAX_DIFF_RATIO = 0.05;
@@ -30,6 +31,13 @@ const MIN_FIELD_CHARS = 60;
 
 export interface KoreanProofreaderInput {
   synthesis: Synthesis;
+  /** Optional: if provided, also proofread block-level Korean fields
+   *  (literary_translation, literal_translation, korean_commentary).
+   *  Block fields are where character glitches accumulate most for long
+   *  inputs — synthesis itself often comes through clean because chunk-merge
+   *  consolidates it, so without block scanning the proofreader misses the
+   *  primary damage site. See model-test-on-dgx 7e8e64a1 run. */
+  blocks?: AnnotatedBlock[];
   signal?: AbortSignal;
 }
 
@@ -44,6 +52,8 @@ export interface FieldProofreadOutcome {
 
 export interface KoreanProofreaderResult {
   synthesis: Synthesis;
+  /** Proofread block array — populated only when input.blocks was provided. */
+  blocks?: AnnotatedBlock[];
   outcomes: FieldProofreadOutcome[];
   modelUsed: string;
   changedFields: number;
@@ -209,8 +219,59 @@ export async function runKoreanProofreaderAgent(
     }),
   );
 
+  // Block-level walk (only when input.blocks supplied — orchestrator decides
+  // when to enable this based on block count + whether chunk-merge ran).
+  // Each block has up to 3 Korean fields; we hit the proofreader for the ones
+  // long enough to plausibly carry glitches.
+  const proofreadBlocks: AnnotatedBlock[] | undefined = input.blocks
+    ? new Array(input.blocks.length)
+    : undefined;
+  if (input.blocks && proofreadBlocks) {
+    for (let i = 0; i < input.blocks.length; i++) {
+      if (input.signal?.aborted) {
+        throw new DOMException(
+          `korean-proofreader aborted at block[${i}]`,
+          "AbortError",
+        );
+      }
+      const b = input.blocks[i];
+      const next: AnnotatedBlock = { ...b };
+      const fieldsToCheck: {
+        key: "literary_translation" | "literal_translation" | "korean_commentary";
+        label: string;
+      }[] = [
+        { key: "literary_translation", label: "literary" },
+        { key: "literal_translation", label: "literal" },
+        { key: "korean_commentary", label: "commentary" },
+      ];
+      for (const f of fieldsToCheck) {
+        const original = (b[f.key] as string) || "";
+        const path = `blocks[${i}].${f.key}`;
+        const result = await proofreadField(
+          original,
+          path,
+          input.signal,
+          modelToUse,
+        );
+        tokens += result.tokens;
+        outcomes.push({
+          fieldPath: path,
+          changed: result.outcome === "applied",
+          outcome: result.outcome,
+          diffRatio: result.diffRatio || undefined,
+        });
+        if (result.outcome === "applied") {
+          changedFields++;
+          (next[f.key] as string) = result.fixed;
+        }
+      }
+      proofreadBlocks[i] = next;
+    }
+  }
+
   return {
     synthesis: out,
+    blocks: proofreadBlocks,
     outcomes,
     modelUsed: modelToUse,
     changedFields,

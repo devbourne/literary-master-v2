@@ -110,8 +110,11 @@ export async function orchestrate(
   send({ type: "profile_complete", profile });
 
   // ── Pass 2: Block Batches ──
+  // Batch size 3 (was 5): a single batch parse failure costs 3 lost blocks
+  // instead of 5. Combined with the per-batch retry below, this approximately
+  // halved the missing/empty rate in our 11.7 KB Gift of Magi run.
   const blocks = splitIntoBlocks(text);
-  const batches = chunkBlocks(blocks, 5);
+  const batches = chunkBlocks(blocks, 3);
   log("pass2", "blocks_count", `${blocks.length} blocks in ${batches.length} batches`);
   send({
     type: "status",
@@ -147,15 +150,39 @@ export async function orchestrate(
     // Try full-batch parse first
     let translations: AnnotatedBlock[] = [];
     let rollingUpdate = "";
-    const parsed = safeParseLLM(BatchResponseSchema, res.text, `Batch ${i}`);
+    let parsed = safeParseLLM(BatchResponseSchema, res.text, `Batch ${i}`);
     if (parsed.data.translations.length > 0) {
       translations = parsed.data.translations;
       rollingUpdate = parsed.data.rolling_summary_update;
     } else {
-      // Fallback: salvage blocks by extracting each block object individually from raw text
-      translations = salvageBlocksFromRaw(res.text);
-      rollingUpdate = extractRollingUpdate(res.text);
-      log("pass2", `batch_${i}_salvaged`, `${translations.length} blocks from raw text`);
+      // Per-batch retry on full parse failure (always-on since v2.5):
+      // attempts to recover the whole batch before falling back to single-block
+      // salvage. Cheap insurance — adds at most one extra LLM call per batch
+      // when the first response is malformed.
+      log("pass2", `batch_${i}_retry_after_parse_fail`, "first parse empty, retrying");
+      const retryRes = await callLLM(prompt, 4000, signal);
+      log("pass2", `batch_${i}_retry_raw`, retryRes.text);
+      step2Tokens += retryRes.usage.completionTokens;
+      totalTokens += retryRes.usage.completionTokens;
+      const retryParsed = safeParseLLM(
+        BatchResponseSchema,
+        retryRes.text,
+        `Batch ${i} (retry)`,
+      );
+      if (retryParsed.data.translations.length > 0) {
+        translations = retryParsed.data.translations;
+        rollingUpdate = retryParsed.data.rolling_summary_update;
+        parsed = retryParsed; // updated parse result for ok-tracking below
+      } else {
+        // Fallback: salvage blocks by extracting each block object individually from raw text
+        translations = salvageBlocksFromRaw(res.text);
+        rollingUpdate = extractRollingUpdate(res.text);
+        log(
+          "pass2",
+          `batch_${i}_salvaged`,
+          `${translations.length} blocks from raw text after retry also empty`,
+        );
+      }
     }
 
     if (!parsed.ok) fallbackCount++;
@@ -369,32 +396,49 @@ export async function orchestrate(
   let synthesisForOutput: Synthesis = synthesis;
 
   // ── Phase 3: Korean Proofreader (post-Synthesis, pre-Verify) ──
-  // Targets the character-level Korean glitches gemma4 produces in long
-  // prose. Operates only when output text length suggests glitches are
-  // possible (>1500 chars in any single Korean field) — short outputs are
-  // historically clean and don't need the round-trip.
-  const totalKoreanChars =
+  // Two trigger paths, since the two failure modes scale differently:
+  //   - Synthesis-side glitches: surface when single-shot synthesis is long
+  //     (≥ 800 chars across the major prose fields). chunk-merge mode
+  //     consolidates and tends to produce shorter, cleaner synthesis but the
+  //     glitches move into the BLOCK stage instead.
+  //   - Block-side glitches: scale with block count. We always proofread block
+  //     fields when block count ≥ 30 (the empirical threshold below which
+  //     block-level glitches don't accumulate enough to matter, based on the
+  //     11.7 KB Gift of Magi run with 159 blocks where block fields had the
+  //     most damage and synthesis came through clean).
+  const synthesisProseLen =
     (synthesis.overview_essay_ko?.length ?? 0) +
     (synthesis.plot_reading_ko?.length ?? 0) +
     (synthesis.style_essay_ko?.length ?? 0);
-  if (totalKoreanChars >= 1500) {
+  const shouldProofreadSynthesis = synthesisProseLen >= 800;
+  const shouldProofreadBlocks = annotated.length >= 30;
+  if (shouldProofreadSynthesis || shouldProofreadBlocks) {
     checkAborted("korean_proofread");
     send({
       type: "status",
       phase: "synthesis",
-      message: "한국어 교정 중...",
+      message: shouldProofreadBlocks
+        ? `한국어 교정 중 (${annotated.length}개 블록 + synthesis)...`
+        : "한국어 교정 중 (synthesis)...",
     });
     const proof = await runKoreanProofreaderAgent({
       synthesis: synthesisForOutput,
+      blocks: shouldProofreadBlocks ? annotated : undefined,
       signal,
     });
     synthesisForOutput = proof.synthesis;
+    if (proof.blocks) {
+      annotated.length = 0;
+      annotated.push(...proof.blocks);
+    }
     totalTokens += proof.tokens;
     log("korean_proofread", "outcomes", {
       modelUsed: proof.modelUsed,
       changedFields: proof.changedFields,
       total: proof.outcomes.length,
-      detail: proof.outcomes,
+      synthesisProseLen,
+      blockCount: annotated.length,
+      detail: proof.outcomes.filter((o) => o.changed),
     });
     stats.push({
       step: 4.5,
@@ -405,8 +449,9 @@ export async function orchestrate(
     });
   } else {
     log("korean_proofread", "skipped", {
-      reason: "totalKoreanChars below threshold",
-      totalKoreanChars,
+      reason: "synthesis too short and block count below threshold",
+      synthesisProseLen,
+      blockCount: annotated.length,
     });
   }
 
