@@ -43,6 +43,8 @@ export interface SynthesisAgentResult {
   parseOk: boolean;
   strategy: SynthesisStrategy;
   partialCount: number;
+  /** Raw model output for diagnostics (single-shot final, or merge-call output for chunk-merge). */
+  rawText?: string;
   tokens: number;
   timeS: number;
   steps: SynthesisAgentStep[];
@@ -84,7 +86,12 @@ async function runSingleShot(
     profile: input.profile,
     annotatedSummary,
   });
-  const gen = streamLLMChunks(prompt, 6000, input.signal);
+  // Bumped from 6000 → 9000 after the v2.5 schema expansion. The new
+  // multi-perspective fields (multi_perspective_synthesis_ko +
+  // complementary_insights + unresolved_tensions + pedagogical_scaffolding)
+  // add ~1500-2500 tokens of output. Single-shot was hitting truncation,
+  // breaking the JSON structure and silently parsing to all-empty defaults.
+  const gen = streamLLMChunks(prompt, 9000, input.signal);
   let raw = "";
   let tokens = 0;
   let lastTick = 0;

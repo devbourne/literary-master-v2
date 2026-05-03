@@ -219,6 +219,141 @@ export async function runKoreanProofreaderAgent(
     }),
   );
 
+  // v2.5 Multi-perspective fields. Each prose field gets the same proofread
+  // pipeline. Skipped silently when fields are empty (no Multi-Gloss layer ran).
+  const mpsResult = await proofreadField(
+    out.multi_perspective_synthesis_ko,
+    "multi_perspective_synthesis_ko",
+    input.signal,
+    modelToUse,
+  );
+  tokens += mpsResult.tokens;
+  outcomes.push({
+    fieldPath: "multi_perspective_synthesis_ko",
+    changed: mpsResult.outcome === "applied",
+    outcome: mpsResult.outcome,
+    diffRatio: mpsResult.diffRatio || undefined,
+  });
+  if (mpsResult.outcome === "applied") {
+    out.multi_perspective_synthesis_ko = mpsResult.fixed;
+    changedFields++;
+  }
+
+  // complementary_insights[].insight_ko
+  out.complementary_insights = await Promise.all(
+    out.complementary_insights.map(async (ci, i) => {
+      if (input.signal?.aborted) {
+        throw new DOMException(
+          `korean-proofreader aborted at complementary_insights[${i}]`,
+          "AbortError",
+        );
+      }
+      const path = `complementary_insights[${i}].insight_ko`;
+      const result = await proofreadField(ci.insight_ko, path, input.signal, modelToUse);
+      tokens += result.tokens;
+      outcomes.push({
+        fieldPath: path,
+        changed: result.outcome === "applied",
+        outcome: result.outcome,
+        diffRatio: result.diffRatio || undefined,
+      });
+      if (result.outcome === "applied") {
+        changedFields++;
+        return { ...ci, insight_ko: result.fixed };
+      }
+      return ci;
+    }),
+  );
+
+  // unresolved_tensions[]: description_ko + most_defensible_ko
+  out.unresolved_tensions = await Promise.all(
+    out.unresolved_tensions.map(async (t, i) => {
+      if (input.signal?.aborted) {
+        throw new DOMException(
+          `korean-proofreader aborted at unresolved_tensions[${i}]`,
+          "AbortError",
+        );
+      }
+      const next = { ...t };
+      const descResult = await proofreadField(
+        t.description_ko,
+        `unresolved_tensions[${i}].description_ko`,
+        input.signal,
+        modelToUse,
+      );
+      tokens += descResult.tokens;
+      outcomes.push({
+        fieldPath: `unresolved_tensions[${i}].description_ko`,
+        changed: descResult.outcome === "applied",
+        outcome: descResult.outcome,
+        diffRatio: descResult.diffRatio || undefined,
+      });
+      if (descResult.outcome === "applied") {
+        next.description_ko = descResult.fixed;
+        changedFields++;
+      }
+      const mdResult = await proofreadField(
+        t.most_defensible_ko,
+        `unresolved_tensions[${i}].most_defensible_ko`,
+        input.signal,
+        modelToUse,
+      );
+      tokens += mdResult.tokens;
+      outcomes.push({
+        fieldPath: `unresolved_tensions[${i}].most_defensible_ko`,
+        changed: mdResult.outcome === "applied",
+        outcome: mdResult.outcome,
+        diffRatio: mdResult.diffRatio || undefined,
+      });
+      if (mdResult.outcome === "applied") {
+        next.most_defensible_ko = mdResult.fixed;
+        changedFields++;
+      }
+      return next;
+    }),
+  );
+
+  // pedagogical_scaffolding: cultural_pitfalls_ko + korean_literature_parallels_ko
+  // (discussion_questions_ko items typically below MIN_FIELD_CHARS — skipped naturally)
+  if (out.pedagogical_scaffolding) {
+    const cp = out.pedagogical_scaffolding;
+    const cpfResult = await proofreadField(
+      cp.cultural_pitfalls_ko,
+      "pedagogical_scaffolding.cultural_pitfalls_ko",
+      input.signal,
+      modelToUse,
+    );
+    tokens += cpfResult.tokens;
+    outcomes.push({
+      fieldPath: "pedagogical_scaffolding.cultural_pitfalls_ko",
+      changed: cpfResult.outcome === "applied",
+      outcome: cpfResult.outcome,
+      diffRatio: cpfResult.diffRatio || undefined,
+    });
+    if (cpfResult.outcome === "applied") {
+      cp.cultural_pitfalls_ko = cpfResult.fixed;
+      changedFields++;
+    }
+
+    const klResult = await proofreadField(
+      cp.korean_literature_parallels_ko,
+      "pedagogical_scaffolding.korean_literature_parallels_ko",
+      input.signal,
+      modelToUse,
+    );
+    tokens += klResult.tokens;
+    outcomes.push({
+      fieldPath: "pedagogical_scaffolding.korean_literature_parallels_ko",
+      changed: klResult.outcome === "applied",
+      outcome: klResult.outcome,
+      diffRatio: klResult.diffRatio || undefined,
+    });
+    if (klResult.outcome === "applied") {
+      cp.korean_literature_parallels_ko = klResult.fixed;
+      changedFields++;
+    }
+  }
+
   // Block-level walk (only when input.blocks supplied — orchestrator decides
   // when to enable this based on block count + whether chunk-merge ran).
   // Each block has up to 3 Korean fields; we hit the proofreader for the ones

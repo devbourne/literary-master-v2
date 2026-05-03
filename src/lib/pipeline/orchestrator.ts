@@ -521,6 +521,9 @@ export async function orchestrate(
     parseOk: synthRes.parseOk,
     steps: synthRes.steps,
   });
+  if (synthRes.rawText) {
+    log("synthesis", "raw", synthRes.rawText);
+  }
   let synthesisForOutput: Synthesis = synthesis;
 
   // ── Phase 3: Korean Proofreader (post-Synthesis, pre-Verify) ──

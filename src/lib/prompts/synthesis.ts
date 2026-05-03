@@ -57,10 +57,13 @@ ${symNames.length > 0 ? symNames.slice(0, 5).map((s) => `    { "symbol": "${s.re
 
   "multi_perspective_synthesis_ko": "(다관점 글로스가 입력에 포함된 경우에만 작성) 3 angle을 통합한 메타 에세이 (400-700자, 단일 코히런트 산문). 어느 관점도 단순 우위로 두지 말고 서로 보완·긴장 관계로 풀어내기.",
   "complementary_insights": [
-    { "angle_pair": "Textual ↔ Critical", "insight_ko": "두 angle이 서로 illuminate하는 구체적 지점 1-2문장" }
+    { "angle_pair": "Textual ↔ Critical", "insight_ko": "텍스트 분석의 X 관찰이 비평 전통의 Y 주장을 구체적 근거로 뒷받침" },
+    { "angle_pair": "Critical ↔ Pedagogical", "insight_ko": "비평적 해석 X가 한국 독자 학습 관점에서 Y 차원으로 확장됨" },
+    { "angle_pair": "Textual ↔ Pedagogical", "insight_ko": "텍스트 정밀 분석 X가 한국 독자에게 Y 어려움/맥락을 밝혀줌" }
   ],
   "unresolved_tensions": [
-    { "description_ko": "angle 간 disagreement 내용", "most_defensible_ko": "어느 쪽이 더 defensible 한가 + 이유" }
+    { "description_ko": "angle A의 X 해석과 angle B의 Y 해석이 충돌하는 구체적 지점", "most_defensible_ko": "어느 쪽이 더 defensible 한가 + 작품 내 근거로 본 이유" },
+    { "description_ko": "두 번째 disagreement", "most_defensible_ko": "verdict + 근거" }
   ],
   "pedagogical_scaffolding": {
     "cultural_pitfalls_ko": "한국 독자가 놓치기 쉬운 문화·역사 맥락 (Pedagogical Gloss 입력 정제·확장)",
@@ -76,11 +79,21 @@ ${symNames.length > 0 ? symNames.slice(0, 5).map((s) => `    { "symbol": "${s.re
 - 확실하지 않은 인용은 비워두거나 짧게. 환각 금지.
 - 오직 JSON 객체 하나만 출력. 앞뒤 설명 텍스트 금지.
 
-## 다관점 글로스 통합 (입력에 포함된 경우)
-\`블록별 주해 요약\` 뒤에 "다관점 글로스" 섹션이 있다면:
-- **multi_perspective_synthesis_ko, complementary_insights, unresolved_tensions, pedagogical_scaffolding** 4개 필드를 *반드시* 채우세요.
-- 다관점 글로스의 구체적 사실·관점·인용을 **그대로 복사하지 말고 통합 재서술**하세요.
-- 기존 필드(overview_essay_ko, cultural_notes_ko, reading_guide_ko 등)도 다관점 글로스의 사실을 흡수해 더 깊이 있게 채우세요.
+## 다관점 글로스 통합 (입력에 포함된 경우) — 최소 수량 강제
+
+\`블록별 주해 요약\` 뒤에 "다관점 글로스" 섹션이 있다면 다음 4 필드는 *반드시* 채우세요:
+
+1. **multi_perspective_synthesis_ko** — 400-700자 단일 통합 메타 에세이. 3 angle 모두 통합.
+2. **complementary_insights** — **최소 3개, 권장 4-6개**. 두 angle 간 illuminate 관계를 구체적으로 제시. angle_pair 명시.
+   - 1-2개만 적었다면 더 깊이 들여다보세요. 3개 angle 의 모든 pair 조합 (Textual↔Critical, Textual↔Pedagogical, Critical↔Pedagogical) 각각에서 1개씩 찾으면 자연스럽게 3개.
+3. **unresolved_tensions** — **최소 2개, 권장 2-3개**. angle 간 disagreement + most_defensible verdict.
+   - 1개만 적었다면 추가 충돌 지점이 있는지 다시 검토. 비평 전통은 본질적으로 서로 다른 가정에서 출발하므로 2개 이상은 항상 surface 가능.
+4. **pedagogical_scaffolding** — 3 subfield 모두 채우기.
+
+규칙:
+- 다관점 글로스의 구체적 사실·관점·인용을 **그대로 복사하지 말고 통합 재서술**.
+- 기존 필드(overview_essay_ko, cultural_notes_ko, reading_guide_ko)도 다관점 글로스 사실을 흡수해 더 깊이 채우기.
+- 위 최소 수량 미달 시 분석 부족으로 간주됨.
 
 다관점 글로스가 없다면 위 4개 필드는 빈 문자열/빈 배열/기본값으로 두세요.
 
