@@ -39,5 +39,38 @@ export function synthesisToPlainText(s: Synthesis): string {
     s.reading_guide_ko.forEach((g, i) => out.push(`${i + 1}. ${g}`));
   }
   if (s.closing_note_ko) out.push(`[단평] ${s.closing_note_ko}`);
+
+  // v2.5 Multi-perspective fields (only emit when populated to keep
+  // legacy-only outputs identical for backwards compatibility).
+  if (s.multi_perspective_synthesis_ko) {
+    out.push(`[다관점 통합] ${s.multi_perspective_synthesis_ko}`);
+  }
+  if (s.complementary_insights?.length) {
+    out.push("[보완적 통찰]");
+    for (const ci of s.complementary_insights) {
+      if (ci.angle_pair || ci.insight_ko) {
+        out.push(`- ${ci.angle_pair}: ${ci.insight_ko}`);
+      }
+    }
+  }
+  if (s.unresolved_tensions?.length) {
+    out.push("[미해결 긴장]");
+    for (const t of s.unresolved_tensions) {
+      if (t.description_ko) {
+        out.push(`- ${t.description_ko}`);
+        if (t.most_defensible_ko) out.push(`  가장 defensible: ${t.most_defensible_ko}`);
+      }
+    }
+  }
+  if (s.pedagogical_scaffolding) {
+    const ps = s.pedagogical_scaffolding;
+    if (ps.cultural_pitfalls_ko) out.push(`[교수 지원 — 문화 함정] ${ps.cultural_pitfalls_ko}`);
+    if (ps.korean_literature_parallels_ko)
+      out.push(`[교수 지원 — 한국 문학 비교] ${ps.korean_literature_parallels_ko}`);
+    if (ps.discussion_questions_ko?.length) {
+      out.push("[교수 지원 — 토론 질문]");
+      ps.discussion_questions_ko.forEach((q, i) => out.push(`${i + 1}. ${q}`));
+    }
+  }
   return out.join("\n\n");
 }

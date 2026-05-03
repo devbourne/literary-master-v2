@@ -41,6 +41,32 @@ export const TwistReadingSchema = z
   })
   .passthrough();
 
+// v2.5 Multi-perspective synthesis structures.
+// Populated only when the Multi-Gloss layer ran; remain empty/default
+// otherwise (backwards compatible with v2 saved files).
+
+export const ComplementaryInsightSchema = z
+  .object({
+    angle_pair: z.string().default(""),
+    insight_ko: z.string().default(""),
+  })
+  .passthrough();
+
+export const UnresolvedTensionSchema = z
+  .object({
+    description_ko: z.string().default(""),
+    most_defensible_ko: z.string().default(""),
+  })
+  .passthrough();
+
+export const PedagogicalScaffoldingSchema = z
+  .object({
+    cultural_pitfalls_ko: z.string().default(""),
+    korean_literature_parallels_ko: z.string().default(""),
+    discussion_questions_ko: z.array(z.string()).default([]),
+  })
+  .passthrough();
+
 export const SynthesisSchema = z
   .object({
     thesis_ko: z.string().default(""),
@@ -60,6 +86,16 @@ export const SynthesisSchema = z
     cultural_notes_ko: z.string().default(""),
     reading_guide_ko: z.array(z.string()).default([]),
     closing_note_ko: z.string().default(""),
+
+    // v2.5 Multi-perspective fields. Empty when MULTI_GLOSS=false or absent.
+    multi_perspective_synthesis_ko: z.string().default(""),
+    complementary_insights: z.array(ComplementaryInsightSchema).default([]),
+    unresolved_tensions: z.array(UnresolvedTensionSchema).default([]),
+    pedagogical_scaffolding: PedagogicalScaffoldingSchema.default({
+      cultural_pitfalls_ko: "",
+      korean_literature_parallels_ko: "",
+      discussion_questions_ko: [],
+    }),
   })
   .passthrough();
 
@@ -69,3 +105,6 @@ export type AnnotatedQuote = z.infer<typeof AnnotatedQuoteSchema>;
 export type CharacterReading = z.infer<typeof CharacterReadingSchema>;
 export type SymbolReading = z.infer<typeof SymbolReadingSchema>;
 export type TwistReading = z.infer<typeof TwistReadingSchema>;
+export type ComplementaryInsight = z.infer<typeof ComplementaryInsightSchema>;
+export type UnresolvedTension = z.infer<typeof UnresolvedTensionSchema>;
+export type PedagogicalScaffolding = z.infer<typeof PedagogicalScaffoldingSchema>;

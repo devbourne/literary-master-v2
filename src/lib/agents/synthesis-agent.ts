@@ -32,6 +32,10 @@ export interface SynthesisAgentInput {
   signal?: AbortSignal;
   /** Optional progress callback, invoked at strategic points. Mirrors single-shot's status ticks. */
   onProgress?: (chars: number) => void;
+  /** Multi-gloss section (rendered for prompt). When set, the merge call in
+   *  chunk-merge mode sees it directly so the multi-perspective Synthesis
+   *  fields can be populated even when partial syntheses didn't carry them. */
+  multiGlossSection?: string;
 }
 
 export interface SynthesisAgentResult {
@@ -177,6 +181,7 @@ async function runChunkMerge(
       profile: input.profile,
       partialsJson: `[${partialJsons.join(",\n")}]`,
       partialCount: partialJsons.length,
+      multiGlossSection: input.multiGlossSection,
     }),
     SynthesisSchema,
     {

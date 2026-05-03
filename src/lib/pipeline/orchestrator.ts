@@ -493,6 +493,9 @@ export async function orchestrate(
     profile,
     annotated,
     summarizeBlocks: summarizeWithGloss,
+    multiGlossSection: multiGloss
+      ? renderMultiGlossForSynthesisPrompt(multiGloss)
+      : undefined,
     signal,
     onProgress: (chars) => {
       send({

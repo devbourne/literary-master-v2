@@ -53,7 +53,20 @@ ${symNames.length > 0 ? symNames.slice(0, 5).map((s) => `    { "symbol": "${s.re
     "읽기 팁 2",
     "읽기 팁 3"
   ],
-  "closing_note_ko": "닫는 단평 (선택, 2-3문장)"
+  "closing_note_ko": "닫는 단평 (선택, 2-3문장)",
+
+  "multi_perspective_synthesis_ko": "(다관점 글로스가 입력에 포함된 경우에만 작성) 3 angle을 통합한 메타 에세이 (400-700자, 단일 코히런트 산문). 어느 관점도 단순 우위로 두지 말고 서로 보완·긴장 관계로 풀어내기.",
+  "complementary_insights": [
+    { "angle_pair": "Textual ↔ Critical", "insight_ko": "두 angle이 서로 illuminate하는 구체적 지점 1-2문장" }
+  ],
+  "unresolved_tensions": [
+    { "description_ko": "angle 간 disagreement 내용", "most_defensible_ko": "어느 쪽이 더 defensible 한가 + 이유" }
+  ],
+  "pedagogical_scaffolding": {
+    "cultural_pitfalls_ko": "한국 독자가 놓치기 쉬운 문화·역사 맥락 (Pedagogical Gloss 입력 정제·확장)",
+    "korean_literature_parallels_ko": "한국 문학과의 비교 (Pedagogical Gloss 입력 정제·확장)",
+    "discussion_questions_ko": ["한국 학생 토론 질문 1", "토론 질문 2", "토론 질문 3"]
+  }
 }
 
 ## 규칙
@@ -62,6 +75,14 @@ ${symNames.length > 0 ? symNames.slice(0, 5).map((s) => `    { "symbol": "${s.re
 - **프로파일과 일관**: twist, characters, symbolism의 이름은 프로파일과 정확히 일치시킬 것.
 - 확실하지 않은 인용은 비워두거나 짧게. 환각 금지.
 - 오직 JSON 객체 하나만 출력. 앞뒤 설명 텍스트 금지.
+
+## 다관점 글로스 통합 (입력에 포함된 경우)
+\`블록별 주해 요약\` 뒤에 "다관점 글로스" 섹션이 있다면:
+- **multi_perspective_synthesis_ko, complementary_insights, unresolved_tensions, pedagogical_scaffolding** 4개 필드를 *반드시* 채우세요.
+- 다관점 글로스의 구체적 사실·관점·인용을 **그대로 복사하지 말고 통합 재서술**하세요.
+- 기존 필드(overview_essay_ko, cultural_notes_ko, reading_guide_ko 등)도 다관점 글로스의 사실을 흡수해 더 깊이 있게 채우세요.
+
+다관점 글로스가 없다면 위 4개 필드는 빈 문자열/빈 배열/기본값으로 두세요.
 
 ## ⚠ 사전 지식 사용 금지 (Phase G — 환각 방지)
 - 이 작품을 이전에 읽은 적이 있다 해도, **위 \`작품 프로파일\`과 \`블록별 주해 요약\`에 명시된 사실만** 사용하세요.
