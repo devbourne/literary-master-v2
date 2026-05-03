@@ -16,6 +16,10 @@ import { buildSynthesisPartialPrompt } from "../prompts/synthesis-partial";
 import { buildSynthesisMergePrompt } from "../prompts/synthesis-merge";
 import { safeParseLLM } from "../schemas/safe-parse";
 import { SynthesisSchema, type Synthesis } from "../schemas/synthesis";
+import {
+  normalizeSynthesisKeys,
+  type KeyNormalizationOutcome,
+} from "../schemas/synthesis-key-normalize";
 import type { WorkProfile } from "../schemas/profile";
 import type { AnnotatedBlock } from "../schemas/block";
 
@@ -45,6 +49,8 @@ export interface SynthesisAgentResult {
   partialCount: number;
   /** Raw model output for diagnostics (single-shot final, or merge-call output for chunk-merge). */
   rawText?: string;
+  /** Key-name glitch migrations performed (e.g. typo'd keys recovered to canonical). */
+  keyMigrations?: KeyNormalizationOutcome[];
   tokens: number;
   timeS: number;
   steps: SynthesisAgentStep[];
@@ -108,12 +114,16 @@ async function runSingleShot(
     }
   }
   const parsed = safeParseLLM(SynthesisSchema, raw, "Synthesis single-shot");
+  // Recover from key-name glitches (e.g. "multi_perspective_seynthesis_ko"
+  // → canonical "multi_perspective_synthesis_ko"). Migrations happen in place.
+  const keyMigrations = normalizeSynthesisKeys(parsed.data);
   return {
     synthesis: parsed.data,
     parseOk: parsed.ok,
     strategy: "single-shot",
     partialCount: 0,
     rawText: raw,
+    keyMigrations,
     tokens,
     timeS: (Date.now() - t0) / 1000,
     steps: [
@@ -206,11 +216,15 @@ async function runChunkMerge(
     tokens: merged.tokens,
   });
 
+  // Recover from key-name glitches in the merge call output too.
+  const keyMigrations = normalizeSynthesisKeys(merged.data);
   return {
     synthesis: merged.data,
     parseOk: merged.ok,
     strategy: "chunk-merge",
     partialCount: chunks.length,
+    rawText: merged.usedFallback ? undefined : undefined, // not currently captured by callLLMWithJsonFallback
+    keyMigrations,
     tokens,
     timeS: (Date.now() - t0) / 1000,
     steps,

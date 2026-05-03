@@ -524,6 +524,9 @@ export async function orchestrate(
   if (synthRes.rawText) {
     log("synthesis", "raw", synthRes.rawText);
   }
+  if (synthRes.keyMigrations && synthRes.keyMigrations.length > 0) {
+    log("synthesis", "key_migrations", synthRes.keyMigrations);
+  }
   let synthesisForOutput: Synthesis = synthesis;
 
   // ── Phase 3: Korean Proofreader (post-Synthesis, pre-Verify) ──
