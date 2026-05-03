@@ -113,6 +113,7 @@ async function runSingleShot(
     parseOk: parsed.ok,
     strategy: "single-shot",
     partialCount: 0,
+    rawText: raw,
     tokens,
     timeS: (Date.now() - t0) / 1000,
     steps: [
