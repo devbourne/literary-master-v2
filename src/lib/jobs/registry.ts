@@ -1,4 +1,4 @@
-// v2.5+ S5 — In-memory job registry for async analysis.
+// v2.5+ S5 — Persistent job registry for async analysis.
 //
 // /api/analyze always returns immediately with a jobId. The actual
 // orchestration runs in the background and reports progress to this
@@ -7,12 +7,27 @@
 // layer's saved teaching-material (storageId on the job) is the canonical
 // result.
 //
-// Lifetime is the process lifetime. Completed jobs stay in memory so
-// /saved can show "recently completed (N)" status during a session;
-// they're lost on server restart but the underlying TeachingMaterial
-// JSON file survives — so no data loss across restart.
+// v2.5.2 hardening:
+//   - Job state is persisted to data/jobs/{id}.json on every mutation
+//     (atomic write + rename). Survives server restart.
+//   - On module load, all existing jobs are hydrated from disk; any job
+//     still marked "running" is reclassified as "error" with an
+//     "abandoned-on-restart" message — the orchestration that owned it
+//     no longer exists.
+//   - A background interval prunes terminal jobs older than
+//     JOB_RETENTION_DAYS (default 7) from both memory and disk.
 
 import { randomUUID } from "crypto";
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  renameSync,
+  unlinkSync,
+  writeFileSync,
+} from "fs";
+import { join } from "path";
 import type { PipelineEvent, PipelinePhase } from "../types";
 
 export type JobStatus =
@@ -56,9 +71,120 @@ export interface JobState {
   error?: string;
 }
 
+/* ── Disk persistence ─────────────────────────────────────── */
+
+const JOBS_DIR = join(process.cwd(), "data", "jobs");
+const RETENTION_DAYS = parseFloat(process.env.JOB_RETENTION_DAYS || "7") || 7;
+const CLEANUP_INTERVAL_MS = 60 * 60 * 1000; // 1 hour
+
+function ensureDir(): void {
+  if (!existsSync(JOBS_DIR)) {
+    mkdirSync(JOBS_DIR, { recursive: true });
+  }
+}
+
+function jobPath(id: string): string {
+  return join(JOBS_DIR, `${id}.json`);
+}
+
+function persistJob(job: JobState): void {
+  try {
+    ensureDir();
+    const tmp = jobPath(job.id) + ".tmp";
+    writeFileSync(tmp, JSON.stringify(job), "utf8");
+    renameSync(tmp, jobPath(job.id));
+  } catch (e) {
+    // Persistence failure is logged but not fatal — in-memory state is
+    // still correct, only crash recovery for this job is lost.
+    console.warn(`[jobs] failed to persist ${job.id}:`, e);
+  }
+}
+
+function deletePersistedJob(id: string): void {
+  try {
+    const p = jobPath(id);
+    if (existsSync(p)) unlinkSync(p);
+  } catch (e) {
+    console.warn(`[jobs] failed to delete ${id}:`, e);
+  }
+}
+
+function hydrateFromDisk(): Map<string, JobState> {
+  const map = new Map<string, JobState>();
+  ensureDir();
+  let abandoned = 0;
+  let loaded = 0;
+  for (const fname of readdirSync(JOBS_DIR)) {
+    if (!fname.endsWith(".json")) continue;
+    try {
+      const raw = readFileSync(join(JOBS_DIR, fname), "utf8");
+      const job = JSON.parse(raw) as JobState;
+      if (!job.id) continue;
+      // Any job still "running" cannot possibly still be running — the
+      // orchestration that owned it is gone with the previous process.
+      if (job.status === "running") {
+        job.status = "error";
+        job.error = "abandoned: server restarted while job was running";
+        job.completedAt = new Date().toISOString();
+        abandoned++;
+        // Persist the corrected state so next restart doesn't repeat.
+        try {
+          writeFileSync(join(JOBS_DIR, fname), JSON.stringify(job), "utf8");
+        } catch {}
+      }
+      map.set(job.id, job);
+      loaded++;
+    } catch (e) {
+      console.warn(`[jobs] failed to load ${fname}:`, e);
+    }
+  }
+  if (loaded > 0 || abandoned > 0) {
+    console.log(
+      `[jobs] hydrated ${loaded} job(s) from disk` +
+        (abandoned ? ` (${abandoned} abandoned-on-restart)` : ""),
+    );
+  }
+  return map;
+}
+
+const TERMINAL: ReadonlySet<JobStatus> = new Set([
+  "complete",
+  "complete_with_warnings",
+  "incomplete",
+  "error",
+  "cancelled",
+]);
+
+function pruneOldJobs(): void {
+  const now = Date.now();
+  const cutoff = now - RETENTION_DAYS * 24 * 60 * 60 * 1000;
+  let removed = 0;
+  for (const [id, job] of jobs) {
+    if (!TERMINAL.has(job.status)) continue;
+    const ts = job.completedAt
+      ? Date.parse(job.completedAt)
+      : Date.parse(job.startedAt);
+    if (Number.isFinite(ts) && ts < cutoff) {
+      jobs.delete(id);
+      abortControllers.delete(id);
+      deletePersistedJob(id);
+      removed++;
+    }
+  }
+  if (removed > 0) {
+    console.log(`[jobs] pruned ${removed} job(s) older than ${RETENTION_DAYS}d`);
+  }
+}
+
+/* ── In-memory state (hydrated once per process) ─────────── */
+
+const globalKey = "__literaryJobsMap_v2";
+const cleanupKey = "__literaryJobsCleanupTimer_v2";
+
 const jobs = (
-  (globalThis as unknown as { __literaryJobsMap?: Map<string, JobState> })
-    .__literaryJobsMap ??= new Map<string, JobState>()
+  (globalThis as unknown as { [k: string]: Map<string, JobState> | undefined })[
+    globalKey
+  ] ??= hydrateFromDisk()
 );
 
 const abortControllers = (
@@ -66,6 +192,22 @@ const abortControllers = (
     __literaryJobAbortMap?: Map<string, AbortController>;
   }).__literaryJobAbortMap ??= new Map<string, AbortController>()
 );
+
+// Schedule cleanup once per process. Run an immediate prune so a freshly
+// hydrated registry doesn't have to wait an hour for stale entries to go.
+if (
+  !(globalThis as unknown as { [k: string]: NodeJS.Timeout | undefined })[
+    cleanupKey
+  ]
+) {
+  pruneOldJobs();
+  const timer = setInterval(pruneOldJobs, CLEANUP_INTERVAL_MS);
+  // Don't keep the event loop alive just for cleanup.
+  if (timer.unref) timer.unref();
+  (globalThis as unknown as { [k: string]: NodeJS.Timeout })[cleanupKey] = timer;
+}
+
+/* ── Public API (unchanged signatures) ────────────────────── */
 
 export function createJob(input: {
   text: string;
@@ -85,6 +227,7 @@ export function createJob(input: {
     sources: input.sources,
   };
   jobs.set(id, job);
+  persistJob(job);
   const ac = new AbortController();
   abortControllers.set(id, ac);
   return { jobId: id, signal: ac.signal };
@@ -115,6 +258,7 @@ export function cancelJob(id: string): boolean {
   if (job && job.status === "running") {
     job.status = "cancelled";
     job.completedAt = new Date().toISOString();
+    persistJob(job);
   }
   return true;
 }
@@ -171,6 +315,7 @@ export function buildJobSend(jobId: string): (event: PipelineEvent) => void {
         job.completedAt = new Date().toISOString();
         break;
     }
+    persistJob(job);
   };
 }
 
@@ -181,5 +326,6 @@ export function markJobError(id: string, message: string): void {
     job.status = "error";
     job.error = message;
     job.completedAt = new Date().toISOString();
+    persistJob(job);
   }
 }
