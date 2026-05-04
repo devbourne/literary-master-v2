@@ -277,6 +277,143 @@ export function SynthesisView({ synthesis: s }: Props) {
           </p>
         </section>
       )}
+
+      {/* v2.5 multi-perspective fields — only render when populated */}
+      {(s.multi_perspective_synthesis_ko ||
+        s.complementary_insights.length > 0 ||
+        s.unresolved_tensions.length > 0 ||
+        (s.pedagogical_scaffolding &&
+          (s.pedagogical_scaffolding.cultural_pitfalls_ko ||
+            s.pedagogical_scaffolding.korean_literature_parallels_ko ||
+            s.pedagogical_scaffolding.discussion_questions_ko.length > 0))) && (
+        <div
+          style={{
+            borderTop: "2px solid #c9b890",
+            marginTop: 40,
+            paddingTop: 12,
+          }}
+        >
+          <div
+            style={{
+              ...style.partLabel,
+              textAlign: "center",
+              color: "#a0834f",
+              fontSize: 11,
+            }}
+          >
+            다관점 통합 (Multi-Perspective Synthesis)
+          </div>
+
+          {s.multi_perspective_synthesis_ko && (
+            <section style={style.section}>
+              <h3 style={style.subsection}>
+                <span style={style.num}>§10</span>다관점 통합 에세이
+              </h3>
+              <p style={style.prose}>{s.multi_perspective_synthesis_ko}</p>
+            </section>
+          )}
+
+          {s.complementary_insights.length > 0 && (
+            <section style={style.section}>
+              <h3 style={style.subsection}>
+                <span style={style.num}>§11</span>관점 간 보완 (Complementary Insights)
+              </h3>
+              <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                {s.complementary_insights.map((ci, i) => (
+                  <li key={i} style={{ marginBottom: 14 }}>
+                    {ci.angle_pair && (
+                      <div
+                        style={{
+                          fontSize: 12,
+                          color: "#8b7355",
+                          fontWeight: 600,
+                          letterSpacing: "0.05em",
+                          marginBottom: 4,
+                        }}
+                      >
+                        {ci.angle_pair}
+                      </div>
+                    )}
+                    <div style={style.body}>{ci.insight_ko}</div>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {s.unresolved_tensions.length > 0 && (
+            <section style={style.section}>
+              <h3 style={style.subsection}>
+                <span style={style.num}>§12</span>미해결 긴장 (Unresolved Tensions)
+              </h3>
+              <ol style={{ paddingLeft: 20, margin: 0 }}>
+                {s.unresolved_tensions.map((t, i) => (
+                  <li key={i} style={{ marginBottom: 16, lineHeight: 1.85 }}>
+                    <div style={style.body}>{t.description_ko}</div>
+                    {t.most_defensible_ko && (
+                      <div
+                        style={{
+                          ...style.body,
+                          marginTop: 6,
+                          paddingLeft: 12,
+                          borderLeft: "3px solid #c9b890",
+                          color: "#3a3024",
+                        }}
+                      >
+                        <strong style={{ color: "#8b7355" }}>판정:</strong>{" "}
+                        {t.most_defensible_ko}
+                      </div>
+                    )}
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )}
+
+          {s.pedagogical_scaffolding &&
+            (s.pedagogical_scaffolding.cultural_pitfalls_ko ||
+              s.pedagogical_scaffolding.korean_literature_parallels_ko ||
+              s.pedagogical_scaffolding.discussion_questions_ko.length > 0) && (
+              <section style={style.section}>
+                <h3 style={style.subsection}>
+                  <span style={style.num}>§13</span>한국 독자 학습 자료
+                </h3>
+                {s.pedagogical_scaffolding.cultural_pitfalls_ko && (
+                  <>
+                    <h4 style={style.minor}>문화적 함정</h4>
+                    <p style={style.prose}>
+                      {s.pedagogical_scaffolding.cultural_pitfalls_ko}
+                    </p>
+                  </>
+                )}
+                {s.pedagogical_scaffolding.korean_literature_parallels_ko && (
+                  <>
+                    <h4 style={style.minor}>한국 문학과의 비교</h4>
+                    <p style={style.prose}>
+                      {s.pedagogical_scaffolding.korean_literature_parallels_ko}
+                    </p>
+                  </>
+                )}
+                {s.pedagogical_scaffolding.discussion_questions_ko.length >
+                  0 && (
+                  <>
+                    <h4 style={style.minor}>토론 질문</h4>
+                    <ol style={style.guideList}>
+                      {s.pedagogical_scaffolding.discussion_questions_ko.map(
+                        (q, i) => (
+                          <li key={i} style={style.guideItem}>
+                            <span style={style.guideBadge}>{i + 1}</span>
+                            {q}
+                          </li>
+                        ),
+                      )}
+                    </ol>
+                  </>
+                )}
+              </section>
+            )}
+        </div>
+      )}
     </div>
   );
 }
