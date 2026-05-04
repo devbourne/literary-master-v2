@@ -6,6 +6,7 @@ import { renderContents } from "./sections/contents";
 import { renderOverview } from "./sections/overview";
 import { renderBilingual } from "./sections/bilingual";
 import { renderSynthesis } from "./sections/synthesis-essay";
+import { renderMultiPerspective } from "./sections/multi-perspective";
 import { renderGlossary } from "./sections/glossary";
 import { renderVerification } from "./sections/verification";
 import { renderColophon } from "./sections/colophon";
@@ -27,6 +28,7 @@ ${renderContents(m)}
 ${renderOverview(m)}
 ${renderBilingual(m)}
 ${renderSynthesis(m)}
+${renderMultiPerspective(m)}
 ${renderGlossary(m)}
 ${renderVerification(m)}
 ${renderColophon(m)}

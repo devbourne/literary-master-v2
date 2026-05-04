@@ -780,4 +780,110 @@ em { font-style: italic; }
   font-family: "Crimson Pro", "Noto Serif KR", serif;
   font-style: italic;
 }
+
+/* ── Part Ⅳ Multi-Perspective ─────────────
+   Distinct visual treatment from §1-§7 to mark this as the culminating
+   integrative chapter (Part Ⅳ vs Part Ⅲ). Slightly tighter leading,
+   warmer paper-tinted backgrounds for the insight/tension callouts,
+   pull-quote dropcap on the meta essay. */
+
+.mp-meta .body.synthesis-prose {
+  font-size: 11.5pt;
+  line-height: 1.78;
+}
+
+.mp-lead {
+  color: #6b5d44;
+  font-style: italic;
+  font-size: 10.5pt;
+  margin-bottom: 14pt;
+}
+
+.mp-insight-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12pt;
+  margin-top: 8pt;
+}
+
+.mp-insight {
+  background: #fbf6ec;
+  border-left: 2pt solid #c9b890;
+  padding: 10pt 14pt 10pt 14pt;
+  break-inside: avoid;
+}
+
+.mp-anglepair {
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.18em;
+  font-weight: 600;
+  font-size: 8.8pt;
+  color: #8b7355;
+  margin-bottom: 4pt;
+  font-family: "Crimson Pro", "Noto Serif KR", serif;
+}
+
+.mp-insight .body.synthesis-prose {
+  font-size: 10.5pt;
+  line-height: 1.65;
+  margin: 0;
+}
+
+.mp-tension-list {
+  list-style: none;
+  margin: 8pt 0 0 0;
+  padding: 0;
+}
+
+.mp-tension {
+  display: grid;
+  grid-template-columns: 24pt 1fr;
+  gap: 12pt;
+  padding: 14pt 0;
+  border-bottom: 0.4pt solid #e6dcc4;
+  break-inside: avoid;
+}
+
+.mp-tension:last-child {
+  border-bottom: none;
+}
+
+.mp-tension-no {
+  font-family: "Crimson Pro", serif;
+  font-style: italic;
+  font-size: 14pt;
+  color: #8b7355;
+  text-align: right;
+  padding-top: 1pt;
+}
+
+.mp-tension-body .body.synthesis-prose {
+  margin: 0;
+}
+
+.mp-verdict {
+  margin-top: 8pt !important;
+  padding-left: 12pt;
+  border-left: 3pt solid #c9b890;
+  font-size: 10.3pt;
+  color: #3a3024;
+}
+
+.mp-verdict-label {
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.16em;
+  font-weight: 700;
+  color: #8b7355;
+  margin-right: 6pt;
+}
+
+.mp-discussion {
+  margin-top: 6pt;
+}
+
+.mp-discussion li {
+  margin-bottom: 8pt;
+  font-size: 10.5pt;
+  line-height: 1.7;
+}
 `;
