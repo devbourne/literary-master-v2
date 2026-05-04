@@ -38,13 +38,13 @@ ${input.multiGlossSection ? `\n${input.multiGlossSection}\n` : ""}
 10. **reading_guide_ko**: 모든 청크 항목의 합집합. 중복 또는 너무 비슷한 항목은 통합.
 11. **closing_note_ko**: 결말 청크의 값 채택. 결말 청크가 비어 있으면 작성 시도.
 
-### 다관점 통합 (입력에 "다관점 글로스" 섹션이 있는 경우)
-12. **multi_perspective_synthesis_ko**: 3 angle (텍스트/비평전통/한국독자) 을 통합한 *단일 메타 에세이* (400-700자). 각 angle을 따로 나열하지 말고 *하나의 통합된 시각*으로 재서술.
-13. **complementary_insights**: 두 angle이 서로 illuminate 하는 구체적 지점 4-6개. 각 항목 angle_pair 명시 (예: "Textual ↔ Critical").
-14. **unresolved_tensions**: angle 간 disagreement 2-3개. description_ko + most_defensible_ko (어느 쪽이 더 defensible 한가 + 근거).
-15. **pedagogical_scaffolding**: 다관점 글로스의 Pedagogical 입력을 정제·확장. cultural_pitfalls_ko / korean_literature_parallels_ko / discussion_questions_ko 채우기.
+## 다관점 글로스 입력 활용 (입력에 "다관점 글로스" 섹션이 있는 경우)
 
-다관점 글로스가 없으면 12-15 필드는 기본값(빈 문자열/빈 배열) 유지.
+다관점 글로스의 구체적 사실·관찰·관점을 흡수하여 위 11개 필드 (특히 cultural_notes_ko,
+plot_reading_ko, character_readings, style_essay_ko, reading_guide_ko) 를 더 깊이 채우세요.
+
+다관점 통합 메타 분석 (multi_perspective_synthesis 등) 은 **이 호출에서 작성하지 마세요** —
+별도 후속 호출 (Stage 4b) 에서 처리됩니다. 이 호출은 위 11개 필드만 정확히 채우는 데 집중하세요.
 
 ## 출력 지침
 - **순수 JSON 단일 객체**만 출력. 마크다운 펜스, 설명, 주석 절대 금지.
@@ -73,19 +73,7 @@ ${input.multiGlossSection ? `\n${input.multiGlossSection}\n` : ""}
   "style_essay_ko": "...",
   "cultural_notes_ko": "...",
   "reading_guide_ko": ["..."],
-  "closing_note_ko": "...",
-  "multi_perspective_synthesis_ko": "(다관점 글로스가 입력에 있을 때만) 3 angle 통합 메타 에세이 400-700자",
-  "complementary_insights": [
-    { "angle_pair": "Textual ↔ Critical", "insight_ko": "..." }
-  ],
-  "unresolved_tensions": [
-    { "description_ko": "...", "most_defensible_ko": "..." }
-  ],
-  "pedagogical_scaffolding": {
-    "cultural_pitfalls_ko": "...",
-    "korean_literature_parallels_ko": "...",
-    "discussion_questions_ko": ["...", "...", "..."]
-  }
+  "closing_note_ko": "..."
 }
 
 JSON만 출력.`;

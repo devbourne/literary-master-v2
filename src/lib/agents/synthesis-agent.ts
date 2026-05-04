@@ -14,8 +14,10 @@ import { callLLMWithJsonFallback } from "../llm-fallback";
 import { buildSynthesisPromptV2 } from "../prompts/synthesis";
 import { buildSynthesisPartialPrompt } from "../prompts/synthesis-partial";
 import { buildSynthesisMergePrompt } from "../prompts/synthesis-merge";
+import { buildSynthesisMultiPerspectivePrompt } from "../prompts/synthesis-multi-perspective";
 import { safeParseLLM } from "../schemas/safe-parse";
 import { SynthesisSchema, type Synthesis } from "../schemas/synthesis";
+import { SynthesisEnrichmentSchema } from "../schemas/synthesis-enrichment";
 import {
   normalizeSynthesisKeys,
   type KeyNormalizationOutcome,
@@ -57,7 +59,7 @@ export interface SynthesisAgentResult {
 }
 
 export type SynthesisAgentStep = {
-  kind: "single-shot" | "partial" | "merge";
+  kind: "single-shot" | "partial" | "merge" | "enrichment";
   label: string;
   parseOk: boolean;
   tokens: number;
@@ -77,10 +79,84 @@ export async function runSynthesisAgent(
   const t0 = Date.now();
   const strategy = selectSynthesisStrategy(input.annotated.length);
 
-  if (strategy === "single-shot") {
-    return runSingleShot(input, t0);
+  const core =
+    strategy === "single-shot"
+      ? await runSingleShot(input, t0)
+      : await runChunkMerge(input, t0);
+
+  // v2.5 Stage 4b — Multi-Perspective Enrichment.
+  // Only runs when the multi-gloss layer produced output. Runs as a SECOND
+  // focused LLM call with a small schema (4 fields only). Splitting the
+  // synthesis like this is the architectural fix for the v2.5b/d/e/f
+  // failure pattern where cramming all 16 fields into one call made
+  // gemma4 emit broken JSON (truncation / key-name glitches / random
+  // characters mid-array). With ~4 fields the model output stays small
+  // enough to remain reliable.
+  if (input.multiGlossSection) {
+    const enrichmentRes = await runEnrichment(
+      core.synthesis,
+      input.multiGlossSection,
+      input.signal,
+    );
+    if (enrichmentRes.parseOk) {
+      // Merge the 4 enrichment fields onto the core synthesis. The core's
+      // existing 12 fields stay untouched.
+      core.synthesis.multi_perspective_synthesis_ko =
+        enrichmentRes.data.multi_perspective_synthesis_ko;
+      core.synthesis.complementary_insights =
+        enrichmentRes.data.complementary_insights;
+      core.synthesis.unresolved_tensions =
+        enrichmentRes.data.unresolved_tensions;
+      core.synthesis.pedagogical_scaffolding =
+        enrichmentRes.data.pedagogical_scaffolding;
+    }
+    core.tokens += enrichmentRes.tokens;
+    core.timeS = (Date.now() - t0) / 1000;
+    core.steps.push({
+      kind: "enrichment",
+      label: enrichmentRes.parseOk
+        ? "multi-perspective enrichment"
+        : "multi-perspective enrichment (parse failed, skipped)",
+      parseOk: enrichmentRes.parseOk,
+      tokens: enrichmentRes.tokens,
+    });
   }
-  return runChunkMerge(input, t0);
+
+  return core;
+}
+
+async function runEnrichment(
+  coreSynthesis: Synthesis,
+  multiGlossSection: string,
+  signal?: AbortSignal,
+): Promise<{
+  data: {
+    multi_perspective_synthesis_ko: string;
+    complementary_insights: Synthesis["complementary_insights"];
+    unresolved_tensions: Synthesis["unresolved_tensions"];
+    pedagogical_scaffolding: Synthesis["pedagogical_scaffolding"];
+  };
+  parseOk: boolean;
+  tokens: number;
+}> {
+  const prompt = buildSynthesisMultiPerspectivePrompt({
+    coreSynthesisJson: JSON.stringify(coreSynthesis),
+    multiGlossSection,
+  });
+  const res = await callLLMWithJsonFallback(
+    prompt,
+    SynthesisEnrichmentSchema,
+    {
+      maxTokens: 4000,
+      signal,
+      label: "Synthesis enrichment (Stage 4b)",
+    },
+  );
+  return {
+    data: res.data,
+    parseOk: res.ok,
+    tokens: res.tokens,
+  };
 }
 
 async function runSingleShot(
