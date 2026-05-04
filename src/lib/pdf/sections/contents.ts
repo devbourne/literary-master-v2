@@ -1,4 +1,5 @@
 import type { TeachingMaterial } from "../../schemas/teaching-material";
+import { computePartLabels } from "./part-labels";
 
 interface ContentsEntry {
   roman: string;
@@ -7,37 +8,26 @@ interface ContentsEntry {
 }
 
 export function renderContents(m: TeachingMaterial): string {
+  const p = computePartLabels(m);
   const entries: ContentsEntry[] = [
-    { roman: "Ⅰ", title: "작품 개관", subtitle: "Overview" },
-    { roman: "Ⅱ", title: "이중언어 정밀 읽기", subtitle: "Bilingual Reader" },
-    { roman: "Ⅲ", title: "종합 분석", subtitle: "Critical Synthesis" },
+    { roman: p.overview, title: "작품 개관", subtitle: "Overview" },
+    { roman: p.bilingual, title: "이중언어 정밀 읽기", subtitle: "Bilingual Reader" },
+    { roman: p.synthesis, title: "종합 분석", subtitle: "Critical Synthesis" },
   ];
-  // v2.5: Part Ⅳ 다관점 통합 only when multi-perspective fields populated.
-  const s = m.synthesis;
-  const hasMultiPerspective =
-    !!s &&
-    (!!s.multi_perspective_synthesis_ko ||
-      s.complementary_insights.length > 0 ||
-      s.unresolved_tensions.length > 0 ||
-      (s.pedagogical_scaffolding &&
-        (!!s.pedagogical_scaffolding.cultural_pitfalls_ko ||
-          !!s.pedagogical_scaffolding.korean_literature_parallels_ko ||
-          s.pedagogical_scaffolding.discussion_questions_ko.length > 0)));
-  if (hasMultiPerspective) {
+  if (p.multiPerspective) {
     entries.push({
-      roman: "Ⅳ",
+      roman: p.multiPerspective,
       title: "다관점 통합",
       subtitle: "Multi-Perspective Synthesis",
     });
   }
-  entries.push({
-    roman: hasMultiPerspective ? "Ⅴ" : "Ⅳ",
-    title: "어휘 총람",
-    subtitle: "Glossary",
-  });
-  if (!m.verification.verified && m.verification.correction_note) {
+  entries.push({ roman: p.glossary, title: "어휘 총람", subtitle: "Glossary" });
+  if (p.index) {
+    entries.push({ roman: p.index, title: "색인", subtitle: "Index" });
+  }
+  if (p.verification) {
     entries.push({
-      roman: hasMultiPerspective ? "Ⅵ" : "Ⅴ",
+      roman: p.verification,
       title: "검증 노트",
       subtitle: "Verification",
     });

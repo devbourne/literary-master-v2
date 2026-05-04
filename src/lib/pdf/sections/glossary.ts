@@ -1,5 +1,6 @@
 import type { TeachingMaterial } from "../../schemas/teaching-material";
 import { escapeHtml } from "../escape";
+import { computePartLabels } from "./part-labels";
 
 interface VocabEntry {
   en: string;
@@ -29,9 +30,10 @@ export function renderGlossary(m: TeachingMaterial): string {
     a.en.localeCompare(b.en, "en", { sensitivity: "base" }),
   );
 
+  const labels = computePartLabels(m);
   return `<div class="part">
   <div class="part-opener">
-    <div class="part-label">Part Ⅳ</div>
+    <div class="part-label">Part ${labels.glossary}</div>
     <h2>어휘 총람</h2>
   </div>
   <p class="glossary-intro">

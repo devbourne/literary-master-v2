@@ -13,6 +13,7 @@ import type {
   PedagogicalScaffolding,
 } from "../../schemas/synthesis";
 import { escapeHtml } from "../escape";
+import { computePartLabels } from "./part-labels";
 
 export function renderMultiPerspective(m: TeachingMaterial): string {
   const s = m.synthesis;
@@ -33,9 +34,10 @@ export function renderMultiPerspective(m: TeachingMaterial): string {
     return "";
   }
 
+  const labels = computePartLabels(m);
   return `<div class="part">
   <div class="part-opener">
-    <div class="part-label">Part Ⅳ</div>
+    <div class="part-label">Part ${labels.multiPerspective ?? "Ⅳ"}</div>
     <h2>다관점 통합</h2>
   </div>
 

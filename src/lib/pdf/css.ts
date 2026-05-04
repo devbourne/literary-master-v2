@@ -51,74 +51,133 @@ body { word-break: keep-all; overflow-wrap: break-word; }
 .cover {
   height: 297mm;
   width: 210mm;
-  padding: 32mm 26mm 26mm;
-  background: linear-gradient(180deg, #f7f1e4 0%, #f4ead5 100%);
+  margin: 0;
+  padding: 0;
+  page-break-after: always;
+  color: #2a2219;
+  background: #f4ead5;
+}
+.cover-bleed {
+  position: relative;
+  height: 297mm;
+  width: 210mm;
+  padding: 28mm 24mm 22mm;
+  background:
+    radial-gradient(120% 80% at 50% 0%, #fff8ea 0%, #f4ead5 55%, #ecdfc1 100%);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  page-break-after: always;
-  color: #2a2219;
+  box-sizing: border-box;
+  overflow: hidden;
 }
+.cover-corner {
+  position: absolute;
+  width: 22mm;
+  height: 22mm;
+  border-color: #6b5a3e;
+  border-style: solid;
+  border-width: 0;
+}
+.cover-corner.tl { top: 14mm; left: 14mm; border-top-width: 0.6pt; border-left-width: 0.6pt; }
+.cover-corner.tr { top: 14mm; right: 14mm; border-top-width: 0.6pt; border-right-width: 0.6pt; }
+.cover-corner.bl { bottom: 14mm; left: 14mm; border-bottom-width: 0.6pt; border-left-width: 0.6pt; }
+.cover-corner.br { bottom: 14mm; right: 14mm; border-bottom-width: 0.6pt; border-right-width: 0.6pt; }
 .cover-header {
+  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  font-size: 8.5pt;
+  font-size: 8pt;
   letter-spacing: 0.3em;
   color: #6b5a3e;
   font-variant-caps: all-small-caps;
   font-weight: 600;
+  z-index: 2;
 }
+.cover-house { font-weight: 700; }
+.cover-house-meta { font-style: italic; letter-spacing: 0.18em; }
 .cover-title-block {
-  margin-top: 60mm;
+  position: relative;
+  margin-top: 24mm;
+  text-align: center;
+  z-index: 2;
 }
 .cover-label {
   font-family: "Crimson Pro", "Noto Serif KR", serif;
   font-size: 9pt;
-  letter-spacing: 0.4em;
+  letter-spacing: 0.42em;
   color: #7a6339;
   font-variant-caps: all-small-caps;
-  margin-bottom: 8mm;
+  margin-bottom: 6mm;
+}
+.cover-fleuron-top, .cover-fleuron-bottom {
+  font-family: "EB Garamond", "Crimson Pro", serif;
+  color: #8b7355;
+  text-align: center;
+  line-height: 1;
+}
+.cover-fleuron-top {
+  font-size: 22pt;
+  margin-bottom: 6mm;
+  letter-spacing: 0.4em;
+}
+.cover-fleuron-bottom {
+  font-size: 14pt;
+  margin: 10mm 0 6mm;
+  letter-spacing: 0.5em;
 }
 .cover-title {
   font-family: "Noto Serif KR", serif;
-  font-size: 38pt;
+  font-size: 36pt;
   font-weight: 700;
-  line-height: 1.1;
+  line-height: 1.12;
   letter-spacing: -0.01em;
-  margin-bottom: 12mm;
+  margin: 0 auto 8mm;
   color: #1a1510;
-  max-width: 140mm;
-}
-.cover-subtitle {
-  font-family: "Crimson Pro", "Noto Serif KR", serif;
-  font-size: 16pt;
-  font-style: italic;
-  color: #4a3d28;
-  margin-bottom: 16mm;
-  letter-spacing: 0.01em;
+  max-width: 150mm;
 }
 .cover-rule {
-  width: 40mm;
+  width: 36mm;
   height: 0.8pt;
   background: #6b5a3e;
-  margin: 8mm 0 8mm;
+  margin: 6mm auto 8mm;
 }
 .cover-author {
   font-family: "Crimson Pro", "Noto Serif KR", serif;
   font-size: 14pt;
   color: #2a2219;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   font-variant-caps: small-caps;
   font-weight: 500;
+  margin-bottom: 12mm;
+}
+.cover-motto {
+  font-family: "Noto Serif KR", serif;
+  font-size: 11pt;
+  color: #4a3d28;
+  font-style: normal;
+  line-height: 1.6;
+  max-width: 130mm;
+  margin: 0 auto 4mm;
+  letter-spacing: 0.02em;
+}
+.cover-edition {
+  font-family: "Crimson Pro", "Noto Serif KR", serif;
+  font-size: 10pt;
+  color: #6b5a3e;
+  letter-spacing: 0.22em;
+  font-variant-caps: all-small-caps;
+  margin-top: 4mm;
 }
 .cover-footer {
-  text-align: right;
+  position: relative;
+  text-align: center;
   font-size: 8.5pt;
   color: #6b5a3e;
   line-height: 1.7;
   font-variant-caps: all-small-caps;
   letter-spacing: 0.18em;
+  z-index: 2;
 }
 .cover-imprint {
   font-family: "Crimson Pro", serif;
@@ -127,6 +186,16 @@ body { word-break: keep-all; overflow-wrap: break-word; }
   letter-spacing: 0.12em;
   margin-bottom: 2mm;
   font-variant-caps: small-caps;
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: 0.5em;
+}
+.cover-imprint-sep { color: #b8a87f; }
+.cover-date {
+  font-family: "Crimson Pro", serif;
+  font-size: 8.5pt;
+  letter-spacing: 0.16em;
 }
 
 /* ── Title page (recto) ─────────────────────── */
@@ -515,6 +584,7 @@ em { font-style: italic; }
 }
 .bi-pair {
   margin: 0 0 8mm;
+  position: relative;
 }
 .bi-pair-marker {
   font-family: "Crimson Pro", serif;
@@ -581,39 +651,135 @@ em { font-style: italic; }
   color: #3a3024;
   break-inside: avoid;
 }
-.bi-notes {
-  margin-top: 3mm;
-  padding-top: 2mm;
-  border-top: 0.4pt solid #d6cab0;
-  font-size: 9pt;
+/* ── Bilingual: academic footnotes (numbered, hanging) ─── */
+.bi-footnotes {
+  list-style: none;
+  margin: 4mm 0 0;
+  padding: 2.5mm 0 0;
+  border-top: 0.5pt solid #8b7355;
+  counter-reset: bifn;
+  font-size: 8.8pt;
   line-height: 1.55;
-  color: #3a3024;
+  color: #2a2219;
+  column-count: 2;
+  column-gap: 6mm;
+  column-rule: 0.3pt dotted #d6cab0;
 }
-.bi-note {
-  display: grid;
-  grid-template-columns: 18mm 1fr;
-  gap: 2mm;
-  padding: 0.8mm 0;
+.bi-fn {
   break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  page-break-inside: avoid;
+  padding: 0.6mm 0;
+  display: grid;
+  grid-template-columns: 4mm 11mm 1fr;
+  gap: 1.2mm;
 }
-.bi-note-label {
+.bi-fn-marker {
+  font-family: "Crimson Pro", serif;
+  font-weight: 700;
+  font-size: 7.5pt;
+  color: #8b7355;
+  text-align: right;
+  padding-top: 0.3mm;
+  font-feature-settings: "sups";
+}
+.bi-fn-label {
   font-variant-caps: all-small-caps;
   letter-spacing: 0.14em;
   color: #8b7355;
   font-weight: 700;
-  font-size: 8pt;
-  padding-top: 0.4mm;
+  font-size: 7.8pt;
+  padding-top: 0.3mm;
 }
-.bi-note-body { color: #2a2219; }
-.bi-note-body .en {
+.bi-fn-body {
+  color: #2a2219;
+  text-indent: 0;
+}
+.bi-fn-body .en {
   font-family: "Crimson Pro", "Noto Serif KR", serif;
   font-style: italic;
   color: #1a1510;
 }
-.bi-note-body b {
+.bi-fn-body b {
   font-family: "Crimson Pro", "Noto Serif KR", serif;
   font-style: italic;
   font-weight: 700;
+}
+
+/* ── Bilingual: vocabulary chip bar (above bi-row) ─── */
+.bi-margin-vocab {
+  margin: 1mm 0 2mm;
+  padding: 1.8mm 2.5mm 1.8mm 3mm;
+  background: #fbf6e9;
+  border-left: 1.5pt solid #c9b88f;
+  border-radius: 0 1mm 1mm 0;
+  font-family: "Noto Sans KR", "Crimson Pro", sans-serif;
+  font-size: 8pt;
+  line-height: 1.45;
+  color: #3a3024;
+  page-break-inside: avoid;
+  break-inside: avoid;
+  display: grid;
+  grid-template-columns: 9mm 1fr;
+  gap: 2mm;
+  align-items: start;
+}
+.mv-head {
+  font-family: "Crimson Pro", "Noto Serif KR", serif;
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.18em;
+  font-weight: 700;
+  color: #8b7355;
+  font-size: 7.4pt;
+  padding-top: 0.4mm;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.3;
+}
+.mv-head-en {
+  font-style: italic;
+  font-weight: 400;
+  color: #b8a87f;
+  letter-spacing: 0.1em;
+  font-size: 6.5pt;
+  margin-top: 0.5mm;
+}
+.mv-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 5mm;
+}
+.mv-item {
+  padding: 0.4mm 0;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+.mv-en {
+  font-family: "Crimson Pro", "EB Garamond", serif;
+  font-weight: 700;
+  font-style: italic;
+  color: #1a1510;
+  margin-right: 1mm;
+}
+.mv-pos {
+  font-style: italic;
+  color: #8b7355;
+  font-size: 6.8pt;
+  margin-right: 1mm;
+}
+.mv-ko {
+  color: #2a2219;
+  margin-right: 0.5mm;
+}
+.mv-ctx {
+  font-style: italic;
+  color: #6b5a3e;
+  font-size: 7.2pt;
+  margin-left: 0.5mm;
 }
 
 /* ── Synthesis essay (Part III) ───────────── */
@@ -885,5 +1051,116 @@ em { font-style: italic; }
   margin-bottom: 8pt;
   font-size: 10.5pt;
   line-height: 1.7;
+}
+
+/* ── Part h2 inline English label ─── */
+.part-h2-en {
+  font-family: "Crimson Pro", serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 0.55em;
+  color: #8b7355;
+  letter-spacing: 0.06em;
+  margin-left: 0.3em;
+}
+
+/* ── Part-opener subtitle (used by back-index) ─── */
+.part-opener-sub {
+  font-style: italic;
+  color: #5c4f3f;
+  font-size: 10pt;
+  line-height: 1.6;
+  max-width: 130mm;
+  margin: 4mm auto 0;
+}
+
+/* ── Back-matter Index (Index part) ─────────── */
+.part-index .part-label { color: #8b7355; }
+.idx-grid {
+  margin-top: 8mm;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10mm;
+}
+.idx-column {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+.idx-col-title {
+  display: flex;
+  align-items: baseline;
+  gap: 4mm;
+  font-family: "Noto Serif KR", serif;
+  font-size: 14pt;
+  font-weight: 700;
+  color: #1a1510;
+  margin: 0 0 3mm;
+  padding-bottom: 1.5mm;
+  border-bottom: 0.6pt solid #8b7355;
+}
+.idx-col-title-en {
+  font-family: "Crimson Pro", serif;
+  font-size: 9pt;
+  font-style: italic;
+  font-weight: 500;
+  color: #8b7355;
+  letter-spacing: 0.06em;
+}
+.idx-col-count {
+  margin-left: auto;
+  font-family: "Crimson Pro", serif;
+  font-size: 8pt;
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.18em;
+  color: #b8a87f;
+  font-weight: 500;
+}
+.idx-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  column-count: 2;
+  column-gap: 8mm;
+  column-rule: 0.3pt dotted #d6cab0;
+  font-size: 9pt;
+  line-height: 1.5;
+}
+.idx-entry {
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  page-break-inside: avoid;
+  padding: 0.8mm 0;
+  border-bottom: 0.3pt dotted #ebe0c7;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  column-gap: 2mm;
+}
+.idx-term {
+  font-family: "Crimson Pro", "Noto Serif KR", serif;
+  font-weight: 700;
+  color: #1a1510;
+  font-size: 9.2pt;
+  grid-column: 1;
+  grid-row: 1;
+}
+.idx-pointer {
+  font-family: "Crimson Pro", serif;
+  font-style: italic;
+  color: #8b7355;
+  font-size: 7.8pt;
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.1em;
+  grid-column: 2;
+  grid-row: 1;
+  text-align: right;
+  align-self: baseline;
+}
+.idx-ko {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  color: #4a3d28;
+  font-size: 8.4pt;
+  margin-top: 0.3mm;
 }
 `;

@@ -1,13 +1,15 @@
 import type { TeachingMaterial } from "../../schemas/teaching-material";
 import { escapeHtml } from "../escape";
+import { computePartLabels } from "./part-labels";
 
 export function renderVerification(m: TeachingMaterial): string {
   if (m.verification.verified) return "";
   if (!m.verification.correction_note && !m.verification.issues.length) return "";
 
+  const labels = computePartLabels(m);
   return `<div class="part">
   <div class="part-opener">
-    <div class="part-label">Part Ⅴ</div>
+    <div class="part-label">Part ${labels.verification ?? "Ⅴ"}</div>
     <h2>검증 노트</h2>
   </div>
   <p class="body">아래 사항들이 원문 대조 과정에서 제기되었습니다. 독자의 판단을 돕기 위해 그대로 수록합니다.</p>
