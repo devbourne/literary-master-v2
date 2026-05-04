@@ -1,13 +1,13 @@
 "use client";
 
-import { useReducer, useCallback, useRef } from "react";
+import { useReducer, useCallback, useRef, useEffect } from "react";
 import type {
-  PipelineEvent,
   PipelinePhase,
   TeachingMaterial,
   WorkProfile,
   AnnotatedBlock,
 } from "@/lib/types";
+import type { JobState } from "@/lib/jobs/registry";
 
 interface AnalysisState {
   phase: PipelinePhase | "error" | "incomplete";
@@ -27,36 +27,27 @@ interface AnalysisState {
   teachingMaterial: TeachingMaterial | null;
   storageId: string | null;
   warnings: string[];
-  /** v2 Phase A: set when the Finalization Gate emitted "incomplete". */
-  incomplete: { reason: string; retryable: boolean } | null;
   error: string | null;
+  jobId: string | null;
+  incomplete: { reason: string; retryable: boolean } | null;
 }
 
 type Action =
-  | { type: "START" }
+  | { type: "START"; jobId: string }
   | { type: "STATUS"; phase: PipelinePhase; message: string }
-  | { type: "PROFILE"; profile: WorkProfile }
-  | { type: "BATCH_START"; batchIndex: number; totalBatches: number }
-  | { type: "BATCH_COMPLETE"; blocks: AnnotatedBlock[]; batchIndex: number }
-  | { type: "REVISE"; blockId: string }
-  | { type: "SYNTHESIS_STREAM"; chunk: string }
+  | { type: "BATCH"; done: number; total: number }
   | {
       type: "VERIFY";
-      verified: boolean;
-      text: string;
-      status?: "VERIFIED" | "CORRECTION" | "UNCERTAIN";
-      iterations?: number;
-      issues?: { section: string; description: string; suggested_fix?: string }[];
+      status: "VERIFIED" | "CORRECTION" | "UNCERTAIN";
     }
   | {
       type: "COMPLETE";
       tm: TeachingMaterial;
-      synthesisMd: string;
-      warnings?: string[];
+      warnings: string[];
       storageId: string;
     }
-  | { type: "ERROR"; message: string }
   | { type: "INCOMPLETE"; reason: string; retryable: boolean }
+  | { type: "ERROR"; message: string }
   | { type: "RESET" };
 
 const initialState: AnalysisState = {
@@ -71,48 +62,34 @@ const initialState: AnalysisState = {
   teachingMaterial: null,
   storageId: null,
   warnings: [],
-  incomplete: null,
   error: null,
+  jobId: null,
+  incomplete: null,
 };
 
 function reducer(state: AnalysisState, action: Action): AnalysisState {
   switch (action.type) {
     case "START":
-      return { ...initialState, phase: "profile", statusMessage: "시작..." };
+      return {
+        ...initialState,
+        phase: "profile",
+        statusMessage: "분석을 백그라운드로 실행 중입니다...",
+        jobId: action.jobId,
+      };
     case "STATUS":
       return { ...state, phase: action.phase, statusMessage: action.message };
-    case "PROFILE":
-      return { ...state, profile: action.profile };
-    case "BATCH_START":
+    case "BATCH":
       return {
         ...state,
-        batchProgress: { done: action.batchIndex, total: action.totalBatches },
+        batchProgress: { done: action.done, total: action.total },
       };
-    case "BATCH_COMPLETE":
-      return {
-        ...state,
-        blocks: [...state.blocks, ...action.blocks],
-        batchProgress: {
-          done: action.batchIndex + 1,
-          total: state.batchProgress.total,
-        },
-      };
-    case "REVISE":
-      return {
-        ...state,
-        revisedIds: new Set([...state.revisedIds, action.blockId]),
-      };
-    case "SYNTHESIS_STREAM":
-      return { ...state, synthesisMd: state.synthesisMd + action.chunk };
     case "VERIFY":
       return {
         ...state,
         verify: {
-          verified: action.verified,
-          text: action.text,
+          verified: action.status === "VERIFIED",
+          text: "",
           status: action.status,
-          iterations: action.iterations,
-          issues: action.issues,
         },
       };
     case "COMPLETE":
@@ -121,17 +98,16 @@ function reducer(state: AnalysisState, action: Action): AnalysisState {
         phase: "done",
         teachingMaterial: action.tm,
         storageId: action.storageId,
-        synthesisMd: action.synthesisMd || state.synthesisMd,
-        warnings: action.warnings ?? state.warnings,
+        warnings: action.warnings,
       };
-    case "ERROR":
-      return { ...state, phase: "error", error: action.message };
     case "INCOMPLETE":
       return {
         ...state,
         phase: "incomplete",
         incomplete: { reason: action.reason, retryable: action.retryable },
       };
+    case "ERROR":
+      return { ...state, phase: "error", error: action.message };
     case "RESET":
       return { ...initialState };
     default:
@@ -139,9 +115,44 @@ function reducer(state: AnalysisState, action: Action): AnalysisState {
   }
 }
 
+const POLL_INTERVAL_MS = 3000;
+
+function maybeRequestNotificationPermission() {
+  if (typeof window === "undefined") return;
+  if (!("Notification" in window)) return;
+  if (Notification.permission === "default") {
+    void Notification.requestPermission();
+  }
+}
+
+function fireCompletionNotification(tm: TeachingMaterial, storageId: string) {
+  if (typeof window === "undefined") return;
+  if (!("Notification" in window)) return;
+  if (Notification.permission !== "granted") return;
+  const title = tm.metadata.title || "분석 완료";
+  const n = new Notification(title, {
+    body: "교재가 준비되었습니다. 클릭하여 열기.",
+    tag: storageId,
+  });
+  n.onclick = () => {
+    window.focus();
+    window.location.href = `/saved/${storageId}`;
+  };
+}
+
 export function useAnalysis() {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const abortRef = useRef<AbortController | null>(null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const jobIdRef = useRef<string | null>(null);
+
+  const stopPolling = useCallback(() => {
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => () => stopPolling(), [stopPolling]);
 
   const analyze = useCallback(
     async (
@@ -154,168 +165,176 @@ export function useAnalysis() {
         pieceIndex?: number;
       },
     ) => {
-    abortRef.current?.abort();
-    const controller = new AbortController();
-    abortRef.current = controller;
-    dispatch({ type: "START" });
+      stopPolling();
+      maybeRequestNotificationPermission();
 
-    try {
-      const res = await fetch("/api/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, sources }),
-        signal: controller.signal,
-      });
-
-      if (!res.ok || !res.body) {
-        dispatch({ type: "ERROR", message: `HTTP ${res.status}` });
+      let res: Response;
+      try {
+        res = await fetch("/api/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text, sources }),
+        });
+      } catch (e) {
+        dispatch({
+          type: "ERROR",
+          message: e instanceof Error ? e.message : String(e),
+        });
         return;
       }
+      if (!res.ok) {
+        let msg = `HTTP ${res.status}`;
+        try {
+          const body = (await res.json()) as { error?: string };
+          if (body.error) msg = body.error;
+        } catch {}
+        dispatch({ type: "ERROR", message: msg });
+        return;
+      }
+      const body = (await res.json()) as { jobId: string };
+      jobIdRef.current = body.jobId;
+      dispatch({ type: "START", jobId: body.jobId });
 
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
+      let lastPhase: string | undefined;
+      let lastBatchKey: string | undefined;
+      let lastVerifyStatus: string | undefined;
+      let terminal = false;
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() || "";
-
-        for (const line of lines) {
-          if (!line.startsWith("data: ")) continue;
-          try {
-            const event = JSON.parse(line.slice(6)) as PipelineEvent;
-            console.log(
-              `[SSE] ${event.type}`,
-              event.type === "complete" || event.type === "complete_with_warnings"
-                ? { storageId: event.storageId }
-                : "",
-            );
-            switch (event.type) {
-              case "status":
-                dispatch({
-                  type: "STATUS",
-                  phase: event.phase,
-                  message: event.message,
-                });
-                break;
-              case "profile_complete":
-                dispatch({ type: "PROFILE", profile: event.profile });
-                break;
-              case "batch_start":
-                dispatch({
-                  type: "BATCH_START",
-                  batchIndex: event.batchIndex,
-                  totalBatches: event.totalBatches,
-                });
-                break;
-              case "batch_complete":
-                dispatch({
-                  type: "BATCH_COMPLETE",
-                  blocks: event.blocks,
-                  batchIndex: event.batchIndex,
-                });
-                break;
-              case "revise_one":
-                dispatch({ type: "REVISE", blockId: event.blockId });
-                break;
-              case "synthesis_stream":
-                dispatch({ type: "SYNTHESIS_STREAM", chunk: event.chunk });
-                break;
-              case "verify_complete":
-                dispatch({
-                  type: "VERIFY",
-                  verified: event.verified,
-                  text: event.text,
-                  status: event.status,
-                  iterations: event.iterations,
-                  issues: event.issues,
-                });
-                break;
-              case "agent_step":
-                // Progress-only; rendered as status message for visibility.
-                dispatch({
-                  type: "STATUS",
-                  phase: "verify",
-                  message:
-                    `[${event.agent}] iter ${event.iter} · ${event.action}` +
-                    (event.status ? ` → ${event.status}` : "") +
-                    (event.contextChars ? ` (ctx=${event.contextChars})` : ""),
-                });
-                break;
-              case "complete":
-              case "complete_with_warnings": {
-                try {
-                  const fetchRes = await fetch(
-                    `/api/teaching-material/${event.storageId}`,
-                  );
-                  if (!fetchRes.ok) {
-                    dispatch({
-                      type: "ERROR",
-                      message: `저장된 교재를 불러오지 못했습니다 (HTTP ${fetchRes.status}).`,
-                    });
-                    break;
-                  }
-                  const data = (await fetchRes.json()) as {
-                    teachingMaterial?: TeachingMaterial;
-                  };
-                  if (!data.teachingMaterial) {
-                    dispatch({
-                      type: "ERROR",
-                      message: "저장된 교재 응답이 비어 있습니다.",
-                    });
-                    break;
-                  }
-                  dispatch({
-                    type: "COMPLETE",
-                    tm: data.teachingMaterial,
-                    synthesisMd: event.synthesisMd,
-                    warnings:
-                      event.type === "complete_with_warnings"
-                        ? event.warnings
-                        : [],
-                    storageId: event.storageId,
-                  });
-                } catch (e) {
-                  dispatch({
-                    type: "ERROR",
-                    message:
-                      e instanceof Error
-                        ? `저장된 교재 가져오기 실패: ${e.message}`
-                        : "저장된 교재 가져오기 실패",
-                  });
-                }
-                break;
-              }
-              case "incomplete":
-                dispatch({
-                  type: "INCOMPLETE",
-                  reason: event.reason,
-                  retryable: event.retryable,
-                });
-                break;
-              case "error":
-                dispatch({ type: "ERROR", message: event.message });
-                break;
-            }
-          } catch {
-            /* skip malformed */
-          }
+      const tick = async () => {
+        if (terminal) {
+          stopPolling();
+          return;
         }
-      }
-    } catch (e) {
-      if ((e as Error).name !== "AbortError") {
-        dispatch({ type: "ERROR", message: (e as Error).message });
-      }
-    }
-  }, []);
+        const id = jobIdRef.current;
+        if (!id) return;
+        try {
+          const r = await fetch(`/api/jobs/${id}`);
+          if (!r.ok) {
+            // Single failure tolerated; persistent failure caught below.
+            return;
+          }
+          const data = (await r.json()) as { job: JobState };
+          const job = data.job;
+          if (
+            job.phase &&
+            job.statusMessage &&
+            (job.phase !== lastPhase || job.statusMessage)
+          ) {
+            lastPhase = job.phase;
+            dispatch({
+              type: "STATUS",
+              phase: job.phase,
+              message: job.statusMessage,
+            });
+          }
+          if (job.batchProgress) {
+            const k = `${job.batchProgress.done}/${job.batchProgress.total}`;
+            if (k !== lastBatchKey) {
+              lastBatchKey = k;
+              dispatch({
+                type: "BATCH",
+                done: job.batchProgress.done,
+                total: job.batchProgress.total,
+              });
+            }
+          }
+          if (job.verifyStatus && job.verifyStatus !== lastVerifyStatus) {
+            lastVerifyStatus = job.verifyStatus;
+            dispatch({ type: "VERIFY", status: job.verifyStatus });
+          }
+          if (
+            job.status === "complete" ||
+            job.status === "complete_with_warnings"
+          ) {
+            terminal = true;
+            stopPolling();
+            if (!job.storageId) {
+              dispatch({
+                type: "ERROR",
+                message: "완료 응답에 storageId 없음",
+              });
+              return;
+            }
+            try {
+              const tmRes = await fetch(
+                `/api/teaching-material/${job.storageId}`,
+              );
+              if (!tmRes.ok) {
+                dispatch({
+                  type: "ERROR",
+                  message: `교재를 불러오지 못했습니다 (HTTP ${tmRes.status}).`,
+                });
+                return;
+              }
+              const tmBody = (await tmRes.json()) as {
+                teachingMaterial?: TeachingMaterial;
+              };
+              if (!tmBody.teachingMaterial) {
+                dispatch({ type: "ERROR", message: "교재 응답이 비어 있음" });
+                return;
+              }
+              dispatch({
+                type: "COMPLETE",
+                tm: tmBody.teachingMaterial,
+                storageId: job.storageId,
+                warnings: job.warnings ?? [],
+              });
+              fireCompletionNotification(
+                tmBody.teachingMaterial,
+                job.storageId,
+              );
+            } catch (e) {
+              dispatch({
+                type: "ERROR",
+                message:
+                  e instanceof Error
+                    ? `교재 가져오기 실패: ${e.message}`
+                    : "교재 가져오기 실패",
+              });
+            }
+          } else if (job.status === "incomplete") {
+            terminal = true;
+            stopPolling();
+            dispatch({
+              type: "INCOMPLETE",
+              reason: job.reason ?? "incomplete",
+              retryable: true,
+            });
+          } else if (job.status === "error") {
+            terminal = true;
+            stopPolling();
+            dispatch({
+              type: "ERROR",
+              message: job.error ?? "분석 중 오류",
+            });
+          } else if (job.status === "cancelled") {
+            terminal = true;
+            stopPolling();
+            dispatch({ type: "ERROR", message: "취소됨" });
+          }
+        } catch {
+          // single tick failure tolerated; loop continues
+        }
+      };
+
+      // Kick once immediately so UI doesn't sit blank for POLL_INTERVAL_MS
+      void tick();
+      pollRef.current = setInterval(tick, POLL_INTERVAL_MS);
+    },
+    [stopPolling],
+  );
 
   const reset = useCallback(() => {
-    abortRef.current?.abort();
+    stopPolling();
+    if (jobIdRef.current) {
+      // Best-effort cancel server-side
+      void fetch(`/api/jobs/${jobIdRef.current}`, { method: "DELETE" }).catch(
+        () => {},
+      );
+    }
+    jobIdRef.current = null;
     dispatch({ type: "RESET" });
-  }, []);
+  }, [stopPolling]);
 
   return { state, analyze, reset };
 }

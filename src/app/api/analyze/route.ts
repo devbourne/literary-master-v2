@@ -1,5 +1,10 @@
 import { orchestrate } from "@/lib/pipeline/orchestrator";
-import type { PipelineEvent } from "@/lib/types";
+import { createJob, buildJobSend, markJobError } from "@/lib/jobs/registry";
+
+// v2.5+ S5: /api/analyze is now always async.
+// Returns 202 Accepted with { jobId } immediately. The orchestration runs
+// detached in the background; client polls /api/jobs/[id] for status and
+// the saved storageId on completion.
 
 export const maxDuration = 600;
 
@@ -69,53 +74,42 @@ export async function POST(req: Request) {
     );
   }
 
+  // Reserve a job + AbortSignal up front so the response can return
+  // immediately with the id.
+  const { jobId, signal } = createJob({
+    text,
+    sources: sources
+      ? {
+          sourceUrl: sources.sourceUrl,
+          sourceTitle: sources.sourceTitle,
+          pieceTitle: sources.pieceTitle,
+        }
+      : undefined,
+  });
+  const send = buildJobSend(jobId);
+
   counter.inflight++;
-  const encoder = new TextEncoder();
-  // v2 Phase A item 2: cancel propagation. ReadableStream.cancel() (fired when
-  // the client navigates away or aborts the fetch) triggers this controller,
-  // which is threaded through orchestrate → llm.ts fetch calls.
-  const cancelController = new AbortController();
 
-  const stream = new ReadableStream({
-    async start(controller) {
-      const send = (event: PipelineEvent) => {
-        try {
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
-        } catch {
-          // Stream closed
-        }
-      };
-
-      try {
-        await orchestrate(text, send, sources, cancelController.signal);
-      } catch (e) {
-        if (
-          cancelController.signal.aborted &&
-          (e as { name?: string })?.name === "AbortError"
-        ) {
-          // Client-initiated cancel; no error event needed (stream already closing).
-        } else {
-          send({ type: "error", message: e instanceof Error ? e.message : String(e) });
-        }
-      } finally {
-        counter.inflight = Math.max(0, counter.inflight - 1);
-        try {
-          controller.close();
-        } catch {
-          /* already closed */
-        }
+  // Detached background work — we deliberately do NOT await this Promise.
+  // It runs to completion (or cancellation via /api/jobs/[id] DELETE) on
+  // its own; failures are caught locally and recorded onto the job state.
+  void (async () => {
+    try {
+      await orchestrate(text, send, sources, signal);
+    } catch (e) {
+      if (signal.aborted && (e as { name?: string })?.name === "AbortError") {
+        // Cancelled via /api/jobs/[id] DELETE — registry already recorded.
+      } else {
+        const msg = e instanceof Error ? e.message : String(e);
+        markJobError(jobId, msg);
       }
-    },
-    cancel(reason) {
-      cancelController.abort(reason);
-    },
-  });
+    } finally {
+      counter.inflight = Math.max(0, counter.inflight - 1);
+    }
+  })();
 
-  return new Response(stream, {
-    headers: {
-      "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache",
-      Connection: "keep-alive",
-    },
-  });
+  return Response.json(
+    { jobId, status: "running" },
+    { status: 202 },
+  );
 }

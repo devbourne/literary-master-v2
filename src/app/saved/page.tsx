@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { JobState } from "@/lib/jobs/registry";
 
 interface SavedItem {
   id: string;
@@ -19,6 +20,9 @@ type LoadState =
   | { status: "ok"; items: SavedItem[] }
   | { status: "disabled" }
   | { status: "error"; message: string };
+
+const RUNNING_STATUSES = ["running"] as const;
+const TERMINAL_COMPLETE = new Set(["complete", "complete_with_warnings"]);
 
 function formatBytes(n: number): string {
   if (n < 1024) return `${n} B`;
@@ -39,10 +43,38 @@ function formatDate(iso: string): string {
   });
 }
 
+function jobPhaseLabel(p?: string): string {
+  switch (p) {
+    case "profile":
+      return "1. 작품 프로파일";
+    case "blocks":
+      return "2. 블록 주해 · 번역";
+    case "revise":
+      return "3. 재검토";
+    case "synthesis":
+      return "4. 종합 보고서";
+    case "verify":
+      return "5. 검증";
+    case "done":
+      return "완료";
+    default:
+      return p ?? "-";
+  }
+}
+
+function elapsedLabel(startedAt: string): string {
+  const ms = Date.now() - new Date(startedAt).getTime();
+  if (ms < 60_000) return `${Math.round(ms / 1000)}초`;
+  if (ms < 3600_000) return `${Math.floor(ms / 60_000)}분`;
+  return `${Math.floor(ms / 3600_000)}시간 ${Math.floor((ms % 3600_000) / 60_000)}분`;
+}
+
 export default function SavedListPage() {
   const [state, setState] = useState<LoadState>({ status: "loading" });
   const [busyId, setBusyId] = useState<string | null>(null);
   const [reloadTick, setReloadTick] = useState(0);
+  const [jobs, setJobs] = useState<JobState[]>([]);
+  const seenCompleteRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     let cancelled = false;
@@ -74,6 +106,68 @@ export default function SavedListPage() {
   }, [reloadTick]);
 
   const reload = () => setReloadTick((n) => n + 1);
+
+  // Poll running + recent jobs every 5s. On any running→complete transition
+  // fire a browser notification (permission requested when the analysis was
+  // submitted on /).
+  useEffect(() => {
+    let cancelled = false;
+    const tick = async () => {
+      try {
+        const r = await fetch("/api/jobs");
+        if (!r.ok) return;
+        const data = (await r.json()) as { items: JobState[] };
+        if (cancelled) return;
+        // Notification on transition to complete
+        for (const j of data.items) {
+          if (
+            TERMINAL_COMPLETE.has(j.status) &&
+            j.storageId &&
+            !seenCompleteRef.current.has(j.id)
+          ) {
+            seenCompleteRef.current.add(j.id);
+            if (
+              typeof window !== "undefined" &&
+              "Notification" in window &&
+              Notification.permission === "granted"
+            ) {
+              const title = j.sources?.pieceTitle || j.sources?.sourceTitle || "분석 완료";
+              const n = new Notification(title, {
+                body: "교재가 준비되었습니다. 클릭하여 열기.",
+                tag: j.id,
+              });
+              n.onclick = () => {
+                window.focus();
+                window.location.href = `/saved/${j.storageId}`;
+              };
+            }
+            // If a new completion appeared, refresh the saved list too
+            setReloadTick((n) => n + 1);
+          }
+        }
+        setJobs(data.items);
+      } catch {
+        // tolerate transient fetch failures
+      }
+    };
+    void tick();
+    const id = setInterval(tick, 5000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, []);
+
+  const handleCancelJob = async (jobId: string) => {
+    if (!confirm("진행 중인 분석을 취소할까요?")) return;
+    try {
+      await fetch(`/api/jobs/${jobId}`, { method: "DELETE" });
+    } catch {}
+  };
+
+  const runningJobs = jobs.filter((j) =>
+    (RUNNING_STATUSES as readonly string[]).includes(j.status),
+  );
 
   const handleDelete = async (id: string, title: string) => {
     if (!confirm(`"${title}" 을(를) 삭제할까요? 되돌릴 수 없습니다.`)) return;
@@ -128,6 +222,107 @@ export default function SavedListPage() {
       </header>
 
       <main style={{ padding: 24, maxWidth: 1000, margin: "0 auto" }}>
+        {runningJobs.length > 0 && (
+          <section
+            style={{
+              marginBottom: 24,
+              padding: 16,
+              background: "#eff6ff",
+              border: "1px solid #bfdbfe",
+              borderRadius: 8,
+            }}
+          >
+            <div
+              style={{
+                fontSize: 13,
+                fontWeight: 700,
+                color: "#1e40af",
+                marginBottom: 12,
+                letterSpacing: "0.02em",
+              }}
+            >
+              ▸ 진행 중 ({runningJobs.length}건)
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {runningJobs.map((j) => (
+                <div
+                  key={j.id}
+                  style={{
+                    background: "#fff",
+                    padding: 12,
+                    borderRadius: 6,
+                    border: "1px solid #dbeafe",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                  }}
+                >
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: "#1f2937",
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {j.sources?.pieceTitle ||
+                        j.sources?.sourceTitle ||
+                        j.inputPreview.slice(0, 60) + (j.inputPreview.length > 60 ? "…" : "")}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 12,
+                        color: "#4b5563",
+                        marginTop: 4,
+                      }}
+                    >
+                      {jobPhaseLabel(j.phase)}
+                      {j.batchProgress &&
+                        j.batchProgress.total > 0 &&
+                        ` · ${j.batchProgress.done}/${j.batchProgress.total} 배치`}
+                      {" · 경과 "}
+                      {elapsedLabel(j.startedAt)}
+                    </div>
+                    {j.statusMessage && (
+                      <div
+                        style={{
+                          fontSize: 11,
+                          color: "#6b7280",
+                          marginTop: 2,
+                          fontFamily: "monospace",
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        {j.statusMessage}
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleCancelJob(j.id)}
+                    style={{
+                      padding: "6px 10px",
+                      fontSize: 12,
+                      border: "1px solid #fca5a5",
+                      borderRadius: 6,
+                      background: "#fff",
+                      color: "#b91c1c",
+                      cursor: "pointer",
+                    }}
+                  >
+                    취소
+                  </button>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         {state.status === "loading" && (
           <p style={{ color: "#6b7280" }}>불러오는 중...</p>
         )}
