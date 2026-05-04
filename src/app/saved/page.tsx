@@ -257,7 +257,15 @@ export default function SavedListPage() {
                     gap: 12,
                   }}
                 >
-                  <div style={{ flex: 1, minWidth: 0 }}>
+                  <Link
+                    href={`/jobs/${j.id}`}
+                    style={{
+                      flex: 1,
+                      minWidth: 0,
+                      textDecoration: "none",
+                      color: "inherit",
+                    }}
+                  >
                     <div
                       style={{
                         fontSize: 13,
@@ -301,7 +309,7 @@ export default function SavedListPage() {
                         {j.statusMessage}
                       </div>
                     )}
-                  </div>
+                  </Link>
                   <button
                     type="button"
                     onClick={() => handleCancelJob(j.id)}
