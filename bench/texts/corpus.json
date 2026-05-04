@@ -1,0 +1,45 @@
+{
+  "corpus_version": "1.0",
+  "texts": [
+    {
+      "id": "after-twenty-years",
+      "file": "after_twenty_years.txt",
+      "title": "After Twenty Years",
+      "author": "O. Henry",
+      "size_class": "S",
+      "notes": "Very short — single-shot synthesis path"
+    },
+    {
+      "id": "tell-tale-heart",
+      "file": "tell_tale_heart.txt",
+      "title": "The Tell-Tale Heart",
+      "author": "Edgar Allan Poe",
+      "size_class": "M",
+      "notes": "First-person unreliable narrator, gothic"
+    },
+    {
+      "id": "gift-of-the-magi",
+      "file": "gift_of_the_magi.txt",
+      "title": "The Gift of the Magi",
+      "author": "O. Henry",
+      "size_class": "M",
+      "notes": "Classic ironic structure"
+    },
+    {
+      "id": "araby",
+      "file": "araby.txt",
+      "title": "Araby",
+      "author": "James Joyce",
+      "size_class": "M",
+      "notes": "Modernist symbolism, Bildungsroman"
+    },
+    {
+      "id": "cop-and-the-anthem",
+      "file": "cop_and_the_anthem.txt",
+      "title": "The Cop and the Anthem",
+      "author": "O. Henry",
+      "size_class": "L",
+      "notes": "Twist ending, social commentary — likely chunk-merge synthesis"
+    }
+  ]
+}
