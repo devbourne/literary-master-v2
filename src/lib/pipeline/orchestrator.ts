@@ -542,10 +542,19 @@ export async function orchestrate(
     (synthesis.overview_essay_ko?.length ?? 0) +
     (synthesis.plot_reading_ko?.length ?? 0) +
     (synthesis.style_essay_ko?.length ?? 0);
+  // Stage 4b multi-perspective fields are also Korean prose susceptible to
+  // gemma4 character glitches. When enrichment ran (multi_perspective_ko
+  // populated), force-include them in the proofreader's scope regardless of
+  // whether the core synthesis met the synthesis-side gate.
+  const enrichmentProseLen =
+    (synthesis.multi_perspective_synthesis_ko?.length ?? 0) +
+    (synthesis.pedagogical_scaffolding?.cultural_pitfalls_ko?.length ?? 0) +
+    (synthesis.pedagogical_scaffolding?.korean_literature_parallels_ko?.length ?? 0);
   const proofreadBlocksEnabled =
     process.env.PROOFREAD_BLOCKS === "true" ||
     process.env.PROOFREAD_BLOCKS === "1";
-  const shouldProofreadSynthesis = synthesisProseLen >= 800;
+  const shouldProofreadSynthesis =
+    synthesisProseLen >= 800 || enrichmentProseLen >= 200;
   const shouldProofreadBlocks =
     proofreadBlocksEnabled && annotated.length >= 30;
   if (shouldProofreadSynthesis || shouldProofreadBlocks) {
