@@ -33,10 +33,16 @@ const CANONICAL_KEYS = [
 ] as const;
 
 /**
- * Levenshtein-style edit distance between two strings, capped at 3.
- * Used as a cheap "looks like a misspelling" check.
+ * Levenshtein-style edit distance between two strings, capped at the supplied
+ * value. The early-exit on `rowMin > cap` was previously too aggressive for
+ * insertion-heavy typos: when the typo inserts a few chars in the middle, the
+ * DP's row-min temporarily climbs above cap before the alignment recovers,
+ * causing the function to return cap+1 even for cases the bound should accept
+ * (observed: "multi_perspective_synthesis_ko" vs "multi_perspective_s무_synthesis_ko",
+ * true distance 3, was returning 4). Running the full DP is bounded by the
+ * absolute length difference + cap so cost stays small.
  */
-function editDistance(a: string, b: string, cap = 3): number {
+function editDistance(a: string, b: string, cap = 4): number {
   if (a === b) return 0;
   if (Math.abs(a.length - b.length) > cap) return cap + 1;
   const m = a.length;
@@ -44,16 +50,13 @@ function editDistance(a: string, b: string, cap = 3): number {
   const prev = new Array(n + 1).fill(0).map((_, j) => j);
   for (let i = 1; i <= m; i++) {
     const curr = [i];
-    let rowMin = i;
     for (let j = 1; j <= n; j++) {
       const cost = a[i - 1] === b[j - 1] ? 0 : 1;
       curr[j] = Math.min(curr[j - 1] + 1, prev[j] + 1, prev[j - 1] + cost);
-      if (curr[j] < rowMin) rowMin = curr[j];
     }
-    if (rowMin > cap) return cap + 1;
     for (let k = 0; k <= n; k++) prev[k] = curr[k];
   }
-  return prev[n];
+  return prev[n] > cap ? cap + 1 : prev[n];
 }
 
 function isEmptyForKey(value: unknown): boolean {
@@ -105,8 +108,8 @@ export function normalizeSynthesisKeys(
         Math.min(candidate.length, canonical.length) /
         Math.max(candidate.length, canonical.length);
       if (lenRatio < 0.6) continue;
-      const dist = editDistance(candidate, canonical, 3);
-      if (dist < bestDist && dist <= 3) {
+      const dist = editDistance(candidate, canonical, 4);
+      if (dist < bestDist && dist <= 4) {
         bestDist = dist;
         bestKey = candidate;
       }
