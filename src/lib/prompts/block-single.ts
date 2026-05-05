@@ -11,6 +11,8 @@ export interface SingleBlockPromptInput {
   target: { blockId: string; originalText: string };
   /** Why the block needs repair (helps the LLM aim its output). */
   reason: "missing" | "empty";
+  /** Pre-rendered glossary block (renderGlossaryForPrompt). Empty string skips. */
+  glossarySection?: string;
 }
 
 export function buildSingleBlockPrompt(input: SingleBlockPromptInput): string {
@@ -27,6 +29,10 @@ export function buildSingleBlockPrompt(input: SingleBlockPromptInput): string {
   lines.push("[작품 프로파일 요약]");
   lines.push(input.profileSummary);
   lines.push("");
+  if (input.glossarySection && input.glossarySection.trim()) {
+    lines.push(input.glossarySection);
+    lines.push("");
+  }
   if (input.prevBlock) {
     lines.push("[직전 블록 — 톤·맥락 참고]");
     lines.push(`원문: ${input.prevBlock.originalText}`);

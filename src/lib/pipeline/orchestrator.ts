@@ -348,6 +348,7 @@ export async function orchestrate(
         allBlocks: blocks,
         annotated,
         profileSummary,
+        glossarySection,
         signal,
       },
       (step) => {

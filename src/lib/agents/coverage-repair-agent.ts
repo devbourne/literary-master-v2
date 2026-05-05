@@ -26,6 +26,9 @@ export interface CoverageRepairInput {
   /** Current annotated state from Pass 2 (may be missing some blockIds). */
   annotated: AnnotatedBlock[];
   profileSummary: string;
+  /** Pre-rendered glossary block; injected into the single-block prompt so
+   *  proper-noun spellings stay consistent with the rest of the run. */
+  glossarySection?: string;
   signal?: AbortSignal;
   /** Per-target retry budget. Defaults to 2 (so up to 3 attempts total). */
   retries?: number;
@@ -157,6 +160,7 @@ export async function runCoverageRepairAgent(
           : undefined,
         target: { blockId: target.blockId, originalText: sourceBlock.text },
         reason: target.reason,
+        glossarySection: input.glossarySection,
       });
 
       const res = await callLLM(prompt, 1500, input.signal);
