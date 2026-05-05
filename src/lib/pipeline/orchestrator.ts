@@ -408,6 +408,7 @@ export async function orchestrate(
       batches,
       profileSummary,
       rollingSummary,
+      glossarySection,
       signal,
     });
     fallbackCount += qualityRes.fallbackCount;

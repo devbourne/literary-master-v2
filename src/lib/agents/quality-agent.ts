@@ -43,6 +43,10 @@ export interface QualityAgentInput {
   profileSummary: string;
   /** Best-available rolling summary (final from Pass 2). */
   rollingSummary: string;
+  /** Pre-rendered glossary block; injected into the high-band batch retry
+   *  prompt so retried batches keep proper-noun spellings consistent with
+   *  the rest of the run. */
+  glossarySection?: string;
   signal?: AbortSignal;
 }
 
@@ -123,6 +127,7 @@ export async function runQualityAgent(
         batchIndex: idx,
         totalBatches: input.batches.length,
         blocks: input.batches[idx],
+        glossarySection: input.glossarySection,
       });
       const res = await callLLM(prompt, 4000, input.signal);
       tokens += res.usage.completionTokens;
@@ -202,6 +207,15 @@ export async function runQualityAgent(
       input.annotated[idx].revised_literal_translation =
         data.revised_literal_translation;
       input.annotated[idx].revision_reason = data.revision_reason;
+      // Clear the original flag so flaggedRatioAfter reflects unresolved
+      // issues, not historical "this needed revising" markers. Without this
+      // the gate's qualityFlaggedRatioAfter equals flaggedRatioBefore even
+      // when revise succeeded on every block.
+      const ann = input.annotated[idx].annotations;
+      if (ann) {
+        ann.flag_for_revision = false;
+        ann.flag_reason = "";
+      }
       revisedCount++;
     }
   }
