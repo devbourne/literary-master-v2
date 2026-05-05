@@ -727,9 +727,17 @@ export async function orchestrate(
   );
   const finalCoverageRatio =
     blocks.length > 0 ? finalReceivedIds.size / blocks.length : 1;
+  // A block is "empty" only if neither the original nor the revised
+  // translation has content. The Quality Agent revise path writes into the
+  // revised_* fields without overwriting the originals, so a block with
+  // empty originals but populated revised fields is rendered fine and must
+  // not be counted as empty here.
   const finalEmptyCount = annotated.filter(
     (b) =>
-      !b.literary_translation?.trim() || !b.literal_translation?.trim(),
+      (!b.literary_translation?.trim() &&
+        !b.revised_literary_translation?.trim()) ||
+      (!b.literal_translation?.trim() &&
+        !b.revised_literal_translation?.trim()),
   ).length;
   const finalPartialCount = annotated.filter((b) => b.partial === true).length;
 

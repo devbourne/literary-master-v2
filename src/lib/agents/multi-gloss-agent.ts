@@ -256,7 +256,10 @@ export async function runMultiGlossAgent(
       {
         angle: "textual_en",
         model: TEXTUAL_MODEL,
-        parseOk: !textualEnRes.error,
+        // Textual angles return prose, not JSON, so "parseOk" here means
+        // "produced usable output". An HTTP-success response with an empty
+        // body would otherwise be silently treated as success.
+        parseOk: !textualEnRes.error && textualEnRes.analysis.trim().length > 0,
         tokens: textualEnRes.tokens,
         timeS: textualEnRes.timeS,
         error: textualEnRes.error,
@@ -264,7 +267,8 @@ export async function runMultiGlossAgent(
       {
         angle: "textual_ko",
         model: input.translationModel || "(default)",
-        parseOk: !textualKoRes.error,
+        parseOk:
+          !textualKoRes.error && textualKoRes.translation.trim().length > 0,
         tokens: textualKoRes.tokens,
         timeS: textualKoRes.timeS,
         error: textualKoRes.error,
