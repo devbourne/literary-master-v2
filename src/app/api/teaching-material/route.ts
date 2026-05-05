@@ -1,4 +1,4 @@
-import { listTeachingMaterials } from "@/lib/pipeline/storage";
+import { listTeachingMaterials } from "@/lib/pipeline/storage-list";
 
 export const runtime = "nodejs";
 

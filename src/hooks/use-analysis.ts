@@ -16,7 +16,6 @@ interface AnalysisState {
   blocks: AnnotatedBlock[];
   batchProgress: { done: number; total: number };
   revisedIds: Set<string>;
-  synthesisMd: string;
   verify: {
     verified: boolean;
     text: string;
@@ -57,7 +56,6 @@ const initialState: AnalysisState = {
   blocks: [],
   batchProgress: { done: 0, total: 0 },
   revisedIds: new Set(),
-  synthesisMd: "",
   verify: null,
   teachingMaterial: null,
   storageId: null,

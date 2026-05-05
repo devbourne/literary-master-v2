@@ -39,7 +39,6 @@ export type PipelineEvent =
       rollingSummary: string;
     }
   | { type: "revise_one"; blockId: string }
-  | { type: "synthesis_stream"; chunk: string }
   | {
       type: "agent_step";
       agent: string;
@@ -60,13 +59,11 @@ export type PipelineEvent =
   | {
       type: "complete";
       storageId: string;
-      synthesisMd: string;
       warnings?: string[];
     }
   | {
       type: "complete_with_warnings";
       storageId: string;
-      synthesisMd: string;
       warnings: string[];
     }
   | {

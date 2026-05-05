@@ -15,7 +15,6 @@ export interface AssembleInput {
   profile: WorkProfile;
   blocks: AnnotatedBlock[];
   synthesis?: Synthesis;
-  synthesisMd?: string;
   verify: {
     status: "VERIFIED" | "CORRECTION" | "UNCERTAIN";
     note?: string;
@@ -43,7 +42,7 @@ export function assemble(i: AssembleInput): TeachingMaterial {
     profile: i.profile,
     blocks: i.blocks,
     synthesis: i.synthesis,
-    synthesis_markdown: i.synthesisMd ?? "",
+    synthesis_markdown: "",
     verification: {
       status: i.verify.status,
       verified: i.verify.status === "VERIFIED",

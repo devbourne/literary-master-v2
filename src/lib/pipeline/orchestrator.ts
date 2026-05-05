@@ -707,7 +707,6 @@ export async function orchestrate(
     profile,
     blocks: annotated,
     synthesis: synthesisForOutput,
-    synthesisMd: "",
     verify: {
       status: verifyRes.status,
       note: verified ? undefined : (verifyRes.note ?? "").slice(0, 800) || undefined,
@@ -789,11 +788,10 @@ export async function orchestrate(
     send({
       type: "complete_with_warnings",
       storageId,
-      synthesisMd: "",
       warnings: decision.warnings,
     });
   } else {
-    send({ type: "complete", storageId, synthesisMd: "" });
+    send({ type: "complete", storageId });
   }
 }
 

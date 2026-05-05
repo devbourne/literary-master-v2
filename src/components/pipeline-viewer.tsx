@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import type { PipelinePhase, WorkProfile, AnnotatedBlock } from "@/lib/types";
 
 interface Props {
@@ -10,7 +9,6 @@ interface Props {
   blocks: AnnotatedBlock[];
   batchProgress: { done: number; total: number };
   revisedIds: Set<string>;
-  synthesisMd: string;
   verify: { verified: boolean; text: string } | null;
   error: string | null;
 }
@@ -34,7 +32,6 @@ export function PipelineViewer(props: Props) {
     blocks,
     batchProgress,
     revisedIds,
-    synthesisMd,
     verify,
     error,
   } = props;
@@ -118,11 +115,6 @@ export function PipelineViewer(props: Props) {
           종합 분석 에세이를 구조화된 JSON으로 작성하고 있습니다…
         </div>
       )}
-      {/* Legacy markdown support if any chunk is captured */}
-      {synthesisMd && phase !== "synthesis" && (
-        <SynthesisPreview md={synthesisMd} active={false} />
-      )}
-
       {/* Verify */}
       {verify && (
         <div
@@ -218,40 +210,6 @@ function BlockGrid({
           );
         })}
       </div>
-    </div>
-  );
-}
-
-function SynthesisPreview({ md, active }: { md: string; active: boolean }) {
-  const scrollRef = useRef<HTMLPreElement>(null);
-  useEffect(() => {
-    if (scrollRef.current && active) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [md, active]);
-  return (
-    <div>
-      <div style={{ fontSize: 13, color: "#6b7280", marginBottom: 4 }}>
-        종합 보고서 생성 중... ({md.length}자)
-      </div>
-      <pre
-        ref={scrollRef}
-        style={{
-          margin: 0,
-          padding: 8,
-          background: "#f9fafb",
-          border: "1px solid #e5e7eb",
-          borderRadius: 6,
-          fontSize: 11,
-          fontFamily: "monospace",
-          whiteSpace: "pre-wrap",
-          maxHeight: 200,
-          overflow: "auto",
-          color: "#374151",
-        }}
-      >
-        {md.slice(-3000)}
-      </pre>
     </div>
   );
 }

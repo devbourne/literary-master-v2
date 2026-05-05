@@ -7,11 +7,17 @@ import { SynthesisView } from "./synthesis-view";
 
 interface Props {
   teachingMaterial: TeachingMaterial | null;
-  legacyMarkdown: string;
+  /** Legacy synthesis_markdown fallback. Old saved materials may still have it;
+   *  current pipeline writes empty string. */
+  legacyMarkdown?: string;
   stats: PipelineStats | null;
 }
 
-export function ReportViewer({ teachingMaterial, legacyMarkdown, stats }: Props) {
+export function ReportViewer({
+  teachingMaterial,
+  legacyMarkdown = "",
+  stats,
+}: Props) {
   const [view, setView] = useState<"report" | "raw">("report");
 
   const tabStyle = (active: boolean) => ({

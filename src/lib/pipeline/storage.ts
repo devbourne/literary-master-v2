@@ -5,8 +5,6 @@ import {
   readFileSync,
   existsSync,
   mkdirSync,
-  readdirSync,
-  statSync,
   renameSync,
   unlinkSync,
 } from "fs";
@@ -121,39 +119,6 @@ export function deleteTeachingMaterial(id: string): boolean {
   } catch {
     return false;
   }
-}
-
-export function listTeachingMaterials(): SavedRecord[] {
-  const dir = resolveStorageDir();
-  if (!existsSync(dir)) return [];
-  const entries = readdirSync(dir);
-  const records: SavedRecord[] = [];
-  for (const entry of entries) {
-    if (!entry.endsWith(".json")) continue;
-    const id = entry.slice(0, -5);
-    const path = join(dir, entry);
-    try {
-      const stat = statSync(path);
-      const raw = JSON.parse(readFileSync(path, "utf8")) as Partial<TeachingMaterial>;
-      records.push({
-        id,
-        title: raw?.metadata?.title ?? "Untitled",
-        author: raw?.metadata?.author ?? "(unknown)",
-        savedAt: stat.mtime.toISOString(),
-        generatedAt: raw?.metadata?.generated_at ?? "",
-        blockCount: raw?.blocks?.length ?? 0,
-        verified: raw?.verification?.verified ?? false,
-        sizeBytes: stat.size,
-      });
-    } catch (e) {
-      console.warn(
-        `[storage] skipping unreadable record ${id}:`,
-        e instanceof Error ? e.message : String(e),
-      );
-    }
-  }
-  records.sort((a, b) => (a.savedAt < b.savedAt ? 1 : -1));
-  return records;
 }
 
 export function getStorageDir(): string {

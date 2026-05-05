@@ -4,14 +4,15 @@ import { useState } from "react";
 import type { TeachingMaterial } from "@/lib/types";
 
 interface Props {
-  report: string;
+  /** Legacy markdown report. Empty string hides the MD button. */
+  report?: string;
   jsonData: unknown;
   teachingMaterial?: TeachingMaterial | null;
   storageId?: string | null;
 }
 
 export function ExportButtons({
-  report,
+  report = "",
   jsonData,
   teachingMaterial,
   storageId,
@@ -79,7 +80,9 @@ export function ExportButtons({
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 4, alignItems: "flex-end" }}>
       <div style={{ display: "flex", gap: 8 }}>
-        <button type="button" style={btnStyle} onClick={() => download(report, "report.md", "text/markdown")}>MD</button>
+        {report && (
+          <button type="button" style={btnStyle} onClick={() => download(report, "report.md", "text/markdown")}>MD</button>
+        )}
         <button type="button" style={btnStyle} onClick={() => download(JSON.stringify(jsonData, null, 2), "data.json", "application/json")}>JSON</button>
         {teachingMaterial && (
           <button type="button" style={btnStyle} onClick={() => download(JSON.stringify(teachingMaterial, null, 2), "teaching-material.json", "application/json")}>

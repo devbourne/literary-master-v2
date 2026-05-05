@@ -213,7 +213,6 @@ export function AnalysisPage() {
           )}
           {currentPhase === "complete" && (
             <ExportButtons
-              report={state.synthesisMd}
               jsonData={state.teachingMaterial}
               teachingMaterial={state.teachingMaterial}
               storageId={state.storageId}
@@ -249,7 +248,6 @@ export function AnalysisPage() {
               blocks={state.blocks}
               batchProgress={state.batchProgress}
               revisedIds={state.revisedIds}
-              synthesisMd={state.synthesisMd}
               verify={state.verify}
               error={state.error}
             />
@@ -282,7 +280,6 @@ export function AnalysisPage() {
             )}
             <ReportViewer
               teachingMaterial={state.teachingMaterial}
-              legacyMarkdown={state.synthesisMd}
               stats={state.teachingMaterial?.stats ?? null}
             />
           </div>
