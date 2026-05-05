@@ -91,6 +91,14 @@ export async function orchestrate(
   const missingBlockIds: string[] = [];
   const emptyBlockIds: string[] = [];
 
+  // Gate signal carriers — populated as the pipeline runs.
+  let qualityBand: "low" | "medium" | "high" | undefined;
+  let qualityFlaggedRatioAfter: number | undefined;
+  let multiGlossEnabled = false;
+  const multiGlossFailedAngles: string[] = [];
+  let enrichmentRan = false;
+  let enrichmentParseOk = false;
+
   // ── Pass 1: Profile (v2 Phase B Profile Agent — strategy by length) ──
   send({ type: "status", phase: "profile", message: "작품 프로파일 구축 중..." });
   log("pass1", "input", `${text.length} chars`);
@@ -404,6 +412,8 @@ export async function orchestrate(
     });
     fallbackCount += qualityRes.fallbackCount;
     totalTokens += qualityRes.tokens;
+    qualityBand = qualityRes.band;
+    qualityFlaggedRatioAfter = qualityRes.flaggedRatioAfter;
     log("pass3", "quality_result", {
       band: qualityRes.band,
       flaggedRatioBefore: qualityRes.flaggedRatioBefore,
@@ -433,7 +443,7 @@ export async function orchestrate(
   // inputs (synthesis already trivial) and skippable via env var when
   // running in budget-strict mode.
   let multiGloss: MultiGloss | undefined;
-  const multiGlossEnabled = process.env.MULTI_GLOSS !== "false" && text.length >= 1500;
+  multiGlossEnabled = process.env.MULTI_GLOSS !== "false" && text.length >= 1500;
   if (multiGlossEnabled) {
     checkAborted("multi_gloss");
     send({
@@ -450,6 +460,9 @@ export async function orchestrate(
     });
     multiGloss = mgRes.multiGloss;
     totalTokens += mgRes.totalTokens;
+    for (const s of mgRes.steps) {
+      if (!s.parseOk) multiGlossFailedAngles.push(s.angle);
+    }
     log("multi_gloss", "result", {
       timeS: mgRes.timeS,
       tokens: mgRes.totalTokens,
@@ -518,6 +531,11 @@ export async function orchestrate(
     parseOk: synthRes.parseOk,
     steps: synthRes.steps,
   });
+  const enrichmentStep = synthRes.steps.find((s) => s.kind === "enrichment");
+  if (enrichmentStep) {
+    enrichmentRan = true;
+    enrichmentParseOk = enrichmentStep.parseOk;
+  }
   if (synthRes.rawText) {
     log("synthesis", "raw", synthRes.rawText);
   }
@@ -726,6 +744,12 @@ export async function orchestrate(
     profileParseOk: profileRes.parseOk,
     fallbackCount,
     hasFatalError: false,
+    qualityBand,
+    qualityFlaggedRatioAfter,
+    multiGlossEnabled,
+    multiGlossFailedAngles,
+    enrichmentRan,
+    enrichmentParseOk,
   });
 
   log("assemble", "coverage", {
