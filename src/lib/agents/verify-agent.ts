@@ -1,5 +1,6 @@
 import { callLLM, ADVERSARIAL_VERIFY_MODEL } from "../llm";
 import { buildVerifyPrompt } from "../prompts/verify";
+import { buildFullTextVerifyPrompt } from "../prompts/verify-fulltext";
 import { buildSynthesisFixPrompt } from "../prompts/synthesis-fix";
 import { safeParseLLM } from "../schemas/safe-parse";
 import { VerificationSchema } from "../schemas/teaching-material";
@@ -121,28 +122,70 @@ export async function runVerifyAgent(
       contextChars: endingChars,
     });
 
-    const res = await callLLM(
-      buildVerifyPrompt({
-        ending,
-        twist: input.twistJson,
-        report: workingReport,
-      }),
-      1500,
-      input.signal,
-    );
-    tokens += res.usage.completionTokens;
-    raw.push(res.text);
+    // Run Stage 1 (ending interpretation) and Stage 2 (full-text fact
+    // grounding) in parallel — same wall time, two independent checks.
+    // Stage 1 catches twist/theme misreads; Stage 2 catches concrete-fact
+    // hallucinations against the full text.
+    const [stage1Res, stage2Res] = await Promise.all([
+      callLLM(
+        buildVerifyPrompt({
+          ending,
+          twist: input.twistJson,
+          report: workingReport,
+        }),
+        1500,
+        input.signal,
+      ),
+      callLLM(
+        buildFullTextVerifyPrompt({
+          fullText: input.fullText,
+          report: workingReport,
+        }),
+        2000,
+        input.signal,
+      ),
+    ]);
+    tokens += stage1Res.usage.completionTokens + stage2Res.usage.completionTokens;
+    raw.push(stage1Res.text, stage2Res.text);
 
-    const parsed = safeParseLLM(
+    const parsed1 = safeParseLLM(
       VerificationSchema,
-      res.text,
-      `VerifyAgent iter ${iterations}`,
+      stage1Res.text,
+      `VerifyAgent iter ${iterations} stage1`,
     );
-    const data = parsed.data;
-    finalStatus = data.status;
-    lastIssues = data.issues ?? [];
+    const parsed2 = safeParseLLM(
+      VerificationSchema,
+      stage2Res.text,
+      `VerifyAgent iter ${iterations} stage2`,
+    );
+
+    // Merge issues. Tag each with origin so the apply-fix prompt sees which
+    // stage flagged it (some sections only Stage 2 can rule on).
+    const stage1Issues = (parsed1.data.issues ?? []).map((it) => ({
+      ...it,
+      section: it.section || "ending",
+    }));
+    const stage2Issues = (parsed2.data.issues ?? []).map((it) => ({
+      ...it,
+      section: it.section || "fabricated",
+    }));
+    const merged = [...stage1Issues, ...stage2Issues];
+
+    // Final status: prefer the strictest. CORRECTION > UNCERTAIN > VERIFIED.
+    const rank: Record<VerificationStatus, number> = {
+      CORRECTION: 2,
+      UNCERTAIN: 1,
+      VERIFIED: 0,
+    };
+    finalStatus =
+      rank[parsed1.data.status] >= rank[parsed2.data.status]
+        ? parsed1.data.status
+        : parsed2.data.status;
+    lastIssues = merged;
+    const summary1 = (parsed1.data as { summary?: string }).summary;
+    const summary2 = (parsed2.data as { summary?: string }).summary;
     lastNote =
-      (data as { summary?: string }).summary ||
+      [summary1, summary2].filter(Boolean).join(" / ") ||
       (lastIssues.length > 0
         ? lastIssues
             .map((it) => `[${it.section}] ${it.description}`)
