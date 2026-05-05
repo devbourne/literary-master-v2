@@ -23,11 +23,14 @@ import type {
   SymbolReading,
 } from "../schemas/synthesis";
 import type { AnnotatedBlock } from "../schemas/block";
+import type { Glossary } from "../schemas/glossary";
 
 /** Maximum acceptable per-field character diff ratio. Above this we discard the proposed fix. */
 const MAX_DIFF_RATIO = 0.05;
 /** Don't proofread fields below this length — short fields aren't where glitches accumulate. */
 const MIN_FIELD_CHARS = 60;
+/** Cyrillic + a few other "wrong-script" character ranges that should never appear in Korean prose. */
+const FOREIGN_SCRIPT_RE = /[Ѐ-ӿͰ-Ͽ԰-֏֐-׿]/;
 
 export interface KoreanProofreaderInput {
   synthesis: Synthesis;
@@ -38,6 +41,11 @@ export interface KoreanProofreaderInput {
    *  consolidates it, so without block scanning the proofreader misses the
    *  primary damage site. See model-test-on-dgx 7e8e64a1 run. */
   blocks?: AnnotatedBlock[];
+  /** Optional proper-noun glossary used as the canonical transliteration reference.
+   *  When provided, the proofread prompt will enforce {english → korean} mappings
+   *  on any occurrence of the source term in the field text — fixes "리치탈드" →
+   *  "리치먼드" type glitches that the model alone cannot recognize. */
+  glossary?: Glossary;
   signal?: AbortSignal;
 }
 
@@ -80,11 +88,33 @@ function approxDiffRatio(a: string, b: string): number {
   return Math.max(charDiverge, lenDiverge);
 }
 
+/** Build glossary entries that are actually relevant to the given text — only
+ *  include entries where the source or target term appears. Cuts prompt noise
+ *  for long glossaries on small fields. */
+function relevantGlossaryEntries(
+  text: string,
+  glossary: Glossary | undefined,
+): Array<{ source: string; korean: string }> {
+  if (!glossary?.entries?.length) return [];
+  const out: Array<{ source: string; korean: string }> = [];
+  for (const e of glossary.entries) {
+    if (!e.english || !e.korean) continue;
+    // Include if either the source (English) appears, OR a fuzzy "starts-with-1-syllable"
+    // of the canonical Korean appears (catches glitched forms like 리치탈드 ⊂ 리치_).
+    const koreanStem = e.korean.slice(0, 2);
+    if (text.includes(e.english) || (koreanStem.length >= 2 && text.includes(koreanStem))) {
+      out.push({ source: e.english, korean: e.korean });
+    }
+  }
+  return out;
+}
+
 async function proofreadField(
   text: string,
   fieldPath: string,
   signal: AbortSignal | undefined,
   modelOverride: string | undefined,
+  glossary: Glossary | undefined,
 ): Promise<{
   fixed: string;
   outcome: FieldProofreadOutcome["outcome"];
@@ -94,18 +124,52 @@ async function proofreadField(
   if (!text || text.length < MIN_FIELD_CHARS) {
     return { fixed: text, outcome: "empty", diffRatio: 0, tokens: 0 };
   }
+  const transliterationGlossary = relevantGlossaryEntries(text, glossary);
   const res = await callLLM(
-    buildKoreanProofreadPrompt({ fieldPath, text }),
+    buildKoreanProofreadPrompt({ fieldPath, text, transliterationGlossary }),
     Math.ceil(text.length * 1.5),
     signal,
     modelOverride,
   );
-  const candidate = res.text.trim();
+  let candidate = res.text.trim();
+  let totalTokens = res.usage.completionTokens;
   if (!candidate) {
-    return { fixed: text, outcome: "model-blank", diffRatio: 0, tokens: res.usage.completionTokens };
+    return { fixed: text, outcome: "model-blank", diffRatio: 0, tokens: totalTokens };
+  }
+  // Hard guard: if the proofread output STILL contains non-Korean script
+  // characters (Cyrillic etc.) on a field where it wasn't expected, run one
+  // more focused pass with the glitch character explicitly highlighted. This
+  // catches cases where the model's first attempt copies the corruption
+  // forward instead of repairing it.
+  if (FOREIGN_SCRIPT_RE.test(candidate) && !signal?.aborted) {
+    const glitch = candidate.match(FOREIGN_SCRIPT_RE)?.[0];
+    const augmentedText = glitch
+      ? `${candidate}\n\n[힌트: 위 본문에 한국어 외 문자 "${glitch}" 가 포함되어 있습니다 — 의도된 한글로 복원하세요.]`
+      : candidate;
+    const retry = await callLLM(
+      buildKoreanProofreadPrompt({
+        fieldPath: `${fieldPath} (script-cleanup)`,
+        text: augmentedText,
+        transliterationGlossary,
+      }),
+      Math.ceil(text.length * 1.5),
+      signal,
+      modelOverride,
+    );
+    totalTokens += retry.usage.completionTokens;
+    const retryCandidate = retry.text.trim();
+    // Only adopt the retry if it actually removed the foreign script and
+    // didn't drift further from the original.
+    if (
+      retryCandidate &&
+      !FOREIGN_SCRIPT_RE.test(retryCandidate) &&
+      approxDiffRatio(text, retryCandidate) <= MAX_DIFF_RATIO
+    ) {
+      candidate = retryCandidate;
+    }
   }
   if (candidate === text) {
-    return { fixed: text, outcome: "unchanged", diffRatio: 0, tokens: res.usage.completionTokens };
+    return { fixed: text, outcome: "unchanged", diffRatio: 0, tokens: totalTokens };
   }
   const diff = approxDiffRatio(text, candidate);
   if (diff > MAX_DIFF_RATIO) {
@@ -113,10 +177,10 @@ async function proofreadField(
       fixed: text,
       outcome: "too-different",
       diffRatio: diff,
-      tokens: res.usage.completionTokens,
+      tokens: totalTokens,
     };
   }
-  return { fixed: candidate, outcome: "applied", diffRatio: diff, tokens: res.usage.completionTokens };
+  return { fixed: candidate, outcome: "applied", diffRatio: diff, tokens: totalTokens };
 }
 
 export async function runKoreanProofreaderAgent(
@@ -153,7 +217,7 @@ export async function runKoreanProofreaderAgent(
       );
     }
     const original = field.get();
-    const result = await proofreadField(original, field.path, input.signal, modelToUse);
+    const result = await proofreadField(original, field.path, input.signal, modelToUse, input.glossary);
     tokens += result.tokens;
     outcomes.push({
       fieldPath: field.path,
@@ -177,7 +241,7 @@ export async function runKoreanProofreaderAgent(
         );
       }
       const path = `character_readings[${i}].reading_ko`;
-      const result = await proofreadField(cr.reading_ko, path, input.signal, modelToUse);
+      const result = await proofreadField(cr.reading_ko, path, input.signal, modelToUse, input.glossary);
       tokens += result.tokens;
       outcomes.push({
         fieldPath: path,
@@ -203,7 +267,7 @@ export async function runKoreanProofreaderAgent(
         );
       }
       const path = `symbolism_readings[${i}].reading_ko`;
-      const result = await proofreadField(sr.reading_ko, path, input.signal, modelToUse);
+      const result = await proofreadField(sr.reading_ko, path, input.signal, modelToUse, input.glossary);
       tokens += result.tokens;
       outcomes.push({
         fieldPath: path,
@@ -226,6 +290,7 @@ export async function runKoreanProofreaderAgent(
     "multi_perspective_synthesis_ko",
     input.signal,
     modelToUse,
+    input.glossary,
   );
   tokens += mpsResult.tokens;
   outcomes.push({
@@ -249,7 +314,7 @@ export async function runKoreanProofreaderAgent(
         );
       }
       const path = `complementary_insights[${i}].insight_ko`;
-      const result = await proofreadField(ci.insight_ko, path, input.signal, modelToUse);
+      const result = await proofreadField(ci.insight_ko, path, input.signal, modelToUse, input.glossary);
       tokens += result.tokens;
       outcomes.push({
         fieldPath: path,
@@ -280,6 +345,7 @@ export async function runKoreanProofreaderAgent(
         `unresolved_tensions[${i}].description_ko`,
         input.signal,
         modelToUse,
+        input.glossary,
       );
       tokens += descResult.tokens;
       outcomes.push({
@@ -297,6 +363,7 @@ export async function runKoreanProofreaderAgent(
         `unresolved_tensions[${i}].most_defensible_ko`,
         input.signal,
         modelToUse,
+        input.glossary,
       );
       tokens += mdResult.tokens;
       outcomes.push({
@@ -322,6 +389,7 @@ export async function runKoreanProofreaderAgent(
       "pedagogical_scaffolding.cultural_pitfalls_ko",
       input.signal,
       modelToUse,
+      input.glossary,
     );
     tokens += cpfResult.tokens;
     outcomes.push({
@@ -340,6 +408,7 @@ export async function runKoreanProofreaderAgent(
       "pedagogical_scaffolding.korean_literature_parallels_ko",
       input.signal,
       modelToUse,
+      input.glossary,
     );
     tokens += klResult.tokens;
     outcomes.push({
@@ -387,6 +456,7 @@ export async function runKoreanProofreaderAgent(
           path,
           input.signal,
           modelToUse,
+          input.glossary,
         );
         tokens += result.tokens;
         outcomes.push({

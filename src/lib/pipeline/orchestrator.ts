@@ -569,6 +569,7 @@ export async function orchestrate(
     const proof = await runKoreanProofreaderAgent({
       synthesis: synthesisForOutput,
       blocks: shouldProofreadBlocks ? annotated : undefined,
+      glossary,
       signal,
     });
     synthesisForOutput = proof.synthesis;
