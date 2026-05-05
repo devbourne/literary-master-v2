@@ -201,6 +201,7 @@ export async function runQualityAgent(
       continue;
     }
     const data = parsed.data;
+    const ann = input.annotated[idx].annotations;
     if (data.changes_significant !== false) {
       input.annotated[idx].revised_literary_translation =
         data.revised_literary_translation;
@@ -211,12 +212,23 @@ export async function runQualityAgent(
       // issues, not historical "this needed revising" markers. Without this
       // the gate's qualityFlaggedRatioAfter equals flaggedRatioBefore even
       // when revise succeeded on every block.
-      const ann = input.annotated[idx].annotations;
       if (ann) {
         ann.flag_for_revision = false;
         ann.flag_reason = "";
       }
       revisedCount++;
+    } else {
+      // Model reviewed the block and decided no significant change is
+      // needed. The block IS resolved (reviewed); leaving flag_for_revision
+      // true would inflate qualityFlaggedRatioAfter with reviewed-but-clean
+      // blocks. Record the review outcome on revision_reason so this isn't
+      // mistaken for "never reviewed".
+      input.annotated[idx].revision_reason =
+        data.revision_reason || "검토 완료, 유의미한 변경 없음";
+      if (ann) {
+        ann.flag_for_revision = false;
+        ann.flag_reason = "";
+      }
     }
   }
 

@@ -34,6 +34,9 @@ export function formatPreviousTranslations(
 ): string {
   const slice = blocks.slice(-n);
   return slice
-    .map((b) => `[${b.blockId}] ${b.literary_translation}`)
+    .map(
+      (b) =>
+        `[${b.blockId}] ${b.revised_literary_translation || b.literary_translation}`,
+    )
     .join("\n\n");
 }
