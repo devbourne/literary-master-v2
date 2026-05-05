@@ -1,7 +1,7 @@
 // Read bench/results/{v1,v2.5}/{textId}.json + extract quantitative metrics
 // + render a markdown comparison table to bench/reports/{date}-v1-vs-v2.5.md
 
-import { readFileSync, writeFileSync, existsSync, readdirSync } from "fs";
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
 import { join, resolve } from "path";
 
 const ROOT = resolve(__dirname);
@@ -169,11 +169,6 @@ function fmt(n: number): string {
   return String(n);
 }
 
-function pctOf(numerator: number, denominator: number): string {
-  if (!denominator) return "—";
-  return `${((numerator / denominator) * 100).toFixed(0)}%`;
-}
-
 function delta(v1: number | undefined, v25: number | undefined): string {
   if (v1 === undefined || v25 === undefined) return "—";
   if (v1 === 0 && v25 === 0) return "0";
@@ -182,11 +177,6 @@ function delta(v1: number | undefined, v25: number | undefined): string {
   if (v1 === 0) return `+${fmt(v25)}`;
   const pct = ((v25 / v1 - 1) * 100).toFixed(0);
   return `${sign}${fmt(d)} (${pct.startsWith("-") ? "" : "+"}${pct}%)`;
-}
-
-function ratioCol(numerator: number, total: number): string {
-  if (!total) return "—";
-  return `${numerator}/${total} (${pctOf(numerator, total)})`;
 }
 
 function buildReport(): string {
@@ -312,7 +302,7 @@ function main() {
   const date = new Date().toISOString().slice(0, 10);
   const reportsDir = join(ROOT, "reports");
   if (!existsSync(reportsDir)) {
-    require("fs").mkdirSync(reportsDir, { recursive: true });
+    mkdirSync(reportsDir, { recursive: true });
   }
   const path = join(reportsDir, `${date}-v1-vs-v2.5.md`);
   writeFileSync(path, out, "utf8");

@@ -88,8 +88,6 @@ export async function orchestrate(
 
   // Quality-signal accumulators (surfaced as warnings at completion).
   let fallbackCount = 0;
-  let totalExpectedBlocks = 0;
-  let totalReceivedBlocks = 0;
   const missingBlockIds: string[] = [];
   const emptyBlockIds: string[] = [];
 
@@ -280,8 +278,6 @@ export async function orchestrate(
     for (const r of groupResults) {
       if (!r.parseOk) fallbackCount++;
       const receivedIds = new Set(r.translations.map((t) => t.blockId).filter(Boolean));
-      totalExpectedBlocks += r.expectedIds.size;
-      totalReceivedBlocks += receivedIds.size;
       for (const id of r.expectedIds) {
         if (!receivedIds.has(id)) missingBlockIds.push(id);
       }
